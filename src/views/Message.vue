@@ -71,6 +71,7 @@
 </template>
 
 <script setup>
+//414px 770px
 import { ref, reactive, computed } from "vue";
 
 const activeId = ref(1);

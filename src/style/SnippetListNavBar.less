@@ -1,0 +1,33 @@
+.tag-list {
+  display: flex;
+  width: 600px;
+}
+.tag {
+  background-color: #efefef;
+  margin: 0 auto;
+  height: 54px;
+  width: 100%;
+  font-size: 18px;
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border: none;
+  border-bottom: 4px solid transparent;
+
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.tag:hover {
+  background-color: #e3e3e3;
+  color: #000;
+}
+
+.tag-active {
+  border-bottom: 4px solid #000;
+  background-color: #dcdcdc;
+  color: #000;
+}
