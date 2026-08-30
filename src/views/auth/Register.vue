@@ -3,7 +3,7 @@
     <div class="login-container">
       <div class="header-container">
         <div class="header-icon">
-          <img src="" alt="" />
+          <img src="/Snippet-64*64.svg" alt="Snippet logo" />
         </div>
         <div class="header-title">
           <h1>创建账号</h1>
@@ -52,4 +52,4 @@
 
 <script setup></script>
 
-<style scoped src="@/style/auth.css"></style>
+<style src="@/style/auth.less"></style>

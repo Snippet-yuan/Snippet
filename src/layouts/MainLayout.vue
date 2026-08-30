@@ -12,4 +12,4 @@ import NavBar from "@/components/NavBar.vue";
 import SearchBar from "@/components/SearchBar.vue";
 </script>
 
-<style scoped src="@/style/MainLayout.css"></style>
+<style scoped src="@/style/mainLayout.less"></style>
