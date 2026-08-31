@@ -16,7 +16,6 @@ const msg = ref("");
 <style scoped>
 .message-layout {
   /* margin-top: 72px; */
-  padding-top: 72px;
   display: flex;
   background-color: rgb(231, 231, 231);
 }

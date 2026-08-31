@@ -191,11 +191,14 @@ onMounted(scrollToBottom);
 <style scoped>
 .chat-container {
   width: 770px;
-  height: calc(100vh - 72px);
+  padding-top: 72px;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid #e8ecf4;
+  border-top: 1px solid #e8ecf4;
+  border-bottom: 1px solid #e8ecf4;
+  border-right: 1px solid #e8ecf4;
   border-radius: 0 24px 24px 0;
   background: #fff;
   color: #202938;

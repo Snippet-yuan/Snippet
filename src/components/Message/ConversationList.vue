@@ -1,5 +1,7 @@
 <template>
   <div class="conversation-list">
+    <div><OperationBar /></div>
+
     <div
       v-for="conversation in conversationList"
       :key="conversation.id"
@@ -41,6 +43,7 @@ import avatar5 from "@/assets/avatar/user-avatar-5.jpg";
 import avatar6 from "@/assets/avatar/user-avatar-6.jpg";
 import avatar7 from "@/assets/avatar/user-avatar-7.jpg";
 import avatar8 from "@/assets/avatar/user-avatar-8.jpg";
+import OperationBar from "./OperationBar.vue";
 
 defineEmits(["select-conversation"]);
 
@@ -281,11 +284,14 @@ const conversationList = [
 <style scoped>
 .conversation-list {
   flex: 0 0 414px;
-  height: calc(100vh - 72px);
+  height: 100vh;
   overflow: auto;
   scrollbar-color: #e8edf6 transparent;
   scrollbar-width: 10px;
   background: #fff;
+  border-right: 1px solid #e8ecf4;
+
+  padding-top: 90px;
 }
 
 .conversation-list::-webkit-scrollbar {

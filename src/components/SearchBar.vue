@@ -1,5 +1,5 @@
 <template>
-  <div class="search-bar">
+  <div class="search-bar" :class="{ 'message-search-bar': isMessagePage }">
     <div class="search-box">
       <PhMagnifyingGlass class="search-icon" :size="24" />
       <input
@@ -22,10 +22,13 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import { useRoute } from "vue-router";
 import { PhMagnifyingGlass, PhEraser, PhCaretDown } from "@phosphor-icons/vue";
 
+const route = useRoute();
 const keyword = ref("");
+const isMessagePage = computed(() => route.path.startsWith("/message"));
 
 function handleSearch() {
   // TODO: 跳转到搜索结果页
