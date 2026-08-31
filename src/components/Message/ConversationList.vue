@@ -283,7 +283,26 @@ const conversationList = [
   flex: 0 0 414px;
   height: calc(100vh - 72px);
   overflow: auto;
+  scrollbar-color: #e8edf6 transparent;
+  scrollbar-width: 10px;
   background: #fff;
+}
+
+.conversation-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.conversation-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.conversation-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #e8edf6;
+}
+
+.conversation-list::-webkit-scrollbar-thumb:hover {
+  background: #dce3f0;
 }
 
 .conversation-list-item {

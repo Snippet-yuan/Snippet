@@ -1,56 +1,136 @@
 <template>
-  <div class="chat-container">
-    <!-- 顶部标题栏 -->
-    <div class="chat-header">
-      <div class="title">对话窗口</div>
-      <div class="status">在线</div>
-    </div>
+  <section class="chat-container">
+    <header class="chat-header">
+      <div class="contact-info">
+        <div class="contact-avatar-wrap">
+          <img
+            :src="activeContact.avatar"
+            :alt="`${activeContact.name}的头像`"
+          />
+          <!-- <span class="online-dot"></span> -->
+        </div>
+        <div class="contact-copy">
+          <div class="contact-name-row">
+            <h1>{{ activeContact.name }}</h1>
+            <span class="contact-label">好友</span>
+          </div>
+          <p>
+            <span class="status-dot"></span>
+            在线
+          </p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" aria-label="搜索消息">
+          <PhMagnifyingGlass :size="20" />
+        </button>
+        <button type="button" aria-label="更多操作">
+          <PhDotsThreeVertical :size="20" />
+        </button>
+      </div>
+    </header>
 
-    <!-- 消息区域（可滚动） -->
-    <div class="chat-messages" ref="messagesRef">
+    <div ref="messagesRef" class="chat-messages">
+      <div class="date-divider"><span>今天 10:24</span></div>
       <div
         v-for="(msg, index) in messages"
-        :key="index"
+        :key="`${msg.time}-${index}`"
         class="message"
         :class="msg.type"
       >
-        <div class="avatar">{{ msg.type === "sent" ? "我" : "对" }}</div>
-        <div>
+        <img
+          v-if="msg.type === 'received'"
+          class="message-avatar"
+          :src="activeContact.avatar"
+          :alt="`${activeContact.name}的头像`"
+        />
+        <div class="message-body">
           <div class="bubble">{{ msg.content }}</div>
-          <div class="time">{{ msg.time }}</div>
+          <div class="message-meta">
+            <time>{{ msg.time }}</time>
+            <span v-if="msg.type === 'sent'" class="read-status">已读</span>
+          </div>
         </div>
+        <div v-if="msg.type === 'sent'" class="self-avatar">我</div>
       </div>
     </div>
 
-    <!-- 输入区 -->
-    <div class="chat-input-area">
+    <footer class="chat-input-area">
+      <div class="input-toolbar">
+        <button type="button" aria-label="添加附件">
+          <PhPaperclip :size="19" />
+        </button>
+        <button type="button" aria-label="添加图片">
+          <PhImage :size="19" />
+        </button>
+        <button type="button" aria-label="添加表情">
+          <PhSmiley :size="19" />
+        </button>
+      </div>
       <textarea
         v-model="inputText"
         class="chat-input"
-        placeholder="输入消息..."
+        placeholder="写下你的消息..."
         rows="1"
         @input="autoResize"
         @keydown.enter.exact.prevent="sendMessage"
       ></textarea>
-      <button class="send-btn" @click="sendMessage">发送</button>
-    </div>
-  </div>
+      <div class="input-footer">
+        <span>Enter 发送 · Shift + Enter 换行</span>
+        <button class="send-btn" type="button" @click="sendMessage">
+          发送
+          <PhPaperPlaneTilt :size="17" weight="fill" />
+        </button>
+      </div>
+    </footer>
+  </section>
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from "vue";
+import { computed, nextTick, onMounted, ref } from "vue";
+import {
+  PhDotsThreeVertical,
+  PhImage,
+  PhMagnifyingGlass,
+  PhPaperclip,
+  PhPaperPlaneTilt,
+  PhSmiley,
+} from "@phosphor-icons/vue";
+import avatar2 from "@/assets/avatar/user-avatar-2.jpg";
+import avatar3 from "@/assets/avatar/user-avatar-3.jpg";
+import avatar4 from "@/assets/avatar/user-avatar-4.jpg";
+import avatar5 from "@/assets/avatar/user-avatar-5.jpg";
+import avatar6 from "@/assets/avatar/user-avatar-6.jpg";
+import avatar7 from "@/assets/avatar/user-avatar-7.jpg";
+import avatar8 from "@/assets/avatar/user-avatar-8.jpg";
 
+const props = defineProps({
+  conversation: {
+    type: String,
+    default: "林小舟",
+  },
+});
+
+const contacts = {
+  林小舟: { name: "林小舟", avatar: avatar2 },
+  阿柒: { name: "阿柒", avatar: avatar5 },
+  "阿柒 · 产品设计": { name: "阿柒 · 产品设计", avatar: avatar5 },
+  产品讨论组: { name: "产品讨论组", avatar: avatar6 },
+  陈默: { name: "陈默", avatar: avatar7 },
+  "陈默 · 体验设计师": { name: "陈默 · 体验设计师", avatar: avatar7 },
+  灵感交换站: { name: "灵感交换站", avatar: avatar8 },
+  "周宁 · 前端开发": { name: "周宁 · 前端开发", avatar: avatar3 },
+  小满: { name: "小满", avatar: avatar4 },
+};
+
+const activeContact = computed(
+  () => contacts[props.conversation] ?? contacts.林小舟,
+);
+const inputText = ref("");
+const messagesRef = ref(null);
 const messages = ref([
-  {
-    type: "received",
-    content: "你好，有什么可以帮你的吗？",
-    time: "10:24",
-  },
-  {
-    type: "sent",
-    content: "想了解一下这个对话框的设计风格。",
-    time: "10:25",
-  },
+  { type: "received", content: "你好，有什么可以帮你的吗？", time: "10:24" },
+  { type: "sent", content: "想了解一下这个对话框的设计风格。", time: "10:25" },
   {
     type: "received",
     content:
@@ -68,265 +148,363 @@ const messages = ref([
       "好的，这里可以继续添加更多消息内容。当消息过多时，中间区域会出现滚动条，保持整体高度不变。",
     time: "10:28",
   },
-  {
-    type: "sent",
-    content: "完美，谢谢！",
-    time: "10:29",
-  },
+  { type: "sent", content: "完美，谢谢！", time: "10:29" },
 ]);
 
-const inputText = ref("");
-const messagesRef = ref(null);
-const textareaRef = ref(null);
+function autoResize(event) {
+  const textarea = event.target;
+  textarea.style.height = "auto";
+  textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+}
 
-// 自动调整输入框高度
-const autoResize = (e) => {
-  const el = e.target;
-  el.style.height = "auto";
-  el.style.height = Math.min(el.scrollHeight, 120) + "px";
-};
-
-// 滚动到底部
-const scrollToBottom = async () => {
+async function scrollToBottom() {
   await nextTick();
   if (messagesRef.value) {
     messagesRef.value.scrollTop = messagesRef.value.scrollHeight;
   }
-};
+}
 
-// 发送消息
-const sendMessage = () => {
-  const text = inputText.value.trim();
-  if (!text) return;
+function sendMessage() {
+  const content = inputText.value.trim();
+  if (!content) return;
 
   const now = new Date();
-  const time =
-    now.getHours().toString().padStart(2, "0") +
-    ":" +
-    now.getMinutes().toString().padStart(2, "0");
-
   messages.value.push({
     type: "sent",
-    content: text,
-    time,
+    content,
+    time: `${now.getHours().toString().padStart(2, "0")}:${now
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`,
   });
-
   inputText.value = "";
-
-  // 重置输入框高度
   nextTick(() => {
     const textarea = document.querySelector(".chat-input");
-    if (textarea) {
-      textarea.style.height = "auto";
-    }
+    if (textarea) textarea.style.height = "auto";
   });
-
   scrollToBottom();
-};
+}
 
-onMounted(() => {
-  scrollToBottom();
-});
+onMounted(scrollToBottom);
 </script>
 
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 .chat-container {
   width: 770px;
-  height: 680px;
-  background: #ffffff;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  height: calc(100vh - 72px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
+  border: 1px solid #e8ecf4;
+  border-radius: 0 24px 24px 0;
+  background: #fff;
+  color: #202938;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* 顶部 */
 .chat-header {
-  padding: 18px 24px;
-  border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
-  flex-shrink: 0;
+  min-height: 72px;
+  padding: 0 30px;
+  border-bottom: 1px solid #edf0f5;
+  background: rgba(255, 255, 255, 0.94);
 }
 
-.chat-header .title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.chat-header .status {
-  font-size: 13px;
-  color: #52c41a;
+.contact-info,
+.contact-name-row,
+.contact-info p,
+.header-actions,
+.message,
+.message-meta,
+.input-toolbar,
+.input-footer,
+.send-btn {
   display: flex;
   align-items: center;
+}
+
+.contact-info {
+  gap: 13px;
+}
+
+.contact-avatar-wrap {
+  position: relative;
+}
+
+.contact-avatar-wrap img {
+  display: block;
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 5px 14px rgba(50, 65, 95, 0.14);
+}
+
+.online-dot,
+.status-dot {
+  border-radius: 50%;
+  background: #43c98b;
+}
+
+.online-dot {
+  position: absolute;
+  right: 0;
+  bottom: 1px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+}
+
+.contact-name-row {
+  gap: 8px;
+}
+
+.contact-name-row h1 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.contact-label {
+  padding: 3px 7px;
+  border-radius: 5px;
+  color: #5b7cfa;
+  background: #eef2ff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.contact-info p {
+  gap: 5px;
+  margin: 6px 0 0;
+  color: #929dae;
+  font-size: 12px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+}
+
+.header-actions {
   gap: 6px;
 }
 
-.chat-header .status::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  background: #52c41a;
-  border-radius: 50%;
+.header-actions button,
+.input-toolbar button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  color: #8e99ab;
+  background: transparent;
+  cursor: pointer;
+  transition: 0.2s ease;
 }
 
-/* 消息区域 */
+.header-actions button {
+  width: 38px;
+  height: 38px;
+}
+
+.header-actions button:hover,
+.input-toolbar button:hover {
+  color: #526fe1;
+  background: #f0f4ff;
+}
+
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
-  background: #fafafa;
+  padding: 28px 32px 20px;
+  background:
+    radial-gradient(circle at 100% 0, #f5f7ff 0, transparent 30%), #fbfcfe;
   scroll-behavior: smooth;
 }
 
-/* 自定义滚动条 */
 .chat-messages::-webkit-scrollbar {
   width: 6px;
 }
-.chat-messages::-webkit-scrollbar-track {
-  background: transparent;
-}
+
 .chat-messages::-webkit-scrollbar-thumb {
-  background: #d9d9d9;
-  border-radius: 3px;
-}
-.chat-messages::-webkit-scrollbar-thumb:hover {
-  background: #bfbfbf;
+  border-radius: 10px;
+  background: #dce2ee;
 }
 
-/* 消息气泡 */
-.message {
+.date-divider {
   display: flex;
-  margin-bottom: 20px;
-  max-width: 75%;
+  align-items: center;
+  gap: 13px;
+  margin: 0 0 28px;
+  color: #aab2c0;
+  font-size: 11px;
 }
 
-.message.received {
-  align-self: flex-start;
+.date-divider::before,
+.date-divider::after {
+  flex: 1;
+  height: 1px;
+  content: "";
+  background: #e9edf4;
+}
+
+.date-divider span {
+  white-space: nowrap;
+}
+
+.message {
+  align-items: flex-end;
+  gap: 10px;
+  max-width: 76%;
+  margin-bottom: 22px;
 }
 
 .message.sent {
-  align-self: flex-end;
+  justify-content: flex-end;
   margin-left: auto;
-  flex-direction: row-reverse;
 }
 
-.avatar {
-  width: 40px;
-  height: 40px;
+.message-avatar,
+.self-avatar {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: #e8e8e8;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  color: #666;
-  font-weight: 500;
 }
 
-.message.sent .avatar {
-  background: #1890ff;
+.message-avatar {
+  object-fit: cover;
+}
+
+.self-avatar {
+  display: grid;
+  place-items: center;
   color: #fff;
-  margin-left: 12px;
+  background: linear-gradient(135deg, #687ff5, #8a7ff1);
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(91, 124, 250, 0.2);
 }
 
-.message.received .avatar {
-  margin-right: 12px;
+.message-body {
+  min-width: 0;
 }
 
 .bubble {
   padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 15px;
-  line-height: 1.5;
+  border: 1px solid #edf0f5;
+  border-radius: 17px 17px 17px 5px;
+  color: #4b5668;
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.65;
   word-break: break-word;
-}
-
-.message.received .bubble {
-  background: #ffffff;
-  color: #333;
-  border: 1px solid #f0f0f0;
-  border-top-left-radius: 4px;
+  box-shadow: 0 5px 16px rgba(50, 65, 95, 0.04);
 }
 
 .message.sent .bubble {
-  background: #1890ff;
+  border-color: #647ff2;
+  border-radius: 17px 17px 5px 17px;
   color: #fff;
-  border-top-right-radius: 4px;
+  background: linear-gradient(135deg, #5b7cfa, #7583f4);
+  box-shadow: 0 8px 18px rgba(91, 124, 250, 0.2);
 }
 
-.time {
-  font-size: 12px;
-  color: #999;
+.message.sent .self-avatar {
+  order: 2;
+}
+
+.message-meta {
+  gap: 7px;
   margin-top: 6px;
-  text-align: right;
+  color: #abb3c0;
+  font-size: 11px;
 }
 
-.message.received .time {
-  text-align: left;
+.message.sent .message-meta {
+  justify-content: flex-end;
 }
 
-/* 输入区 */
+.read-status {
+  color: #6f88e9;
+}
+
 .chat-input-area {
-  padding: 16px 24px;
-  border-top: 1px solid #eee;
+  padding: 13px 24px 18px;
+  border-top: 1px solid #edf0f5;
   background: #fff;
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
-  flex-shrink: 0;
+}
+
+.input-toolbar {
+  gap: 3px;
+}
+
+.input-toolbar button {
+  width: 32px;
+  height: 30px;
 }
 
 .chat-input {
-  flex: 1;
-  min-height: 44px;
+  display: block;
+  width: 100%;
+  min-height: 42px;
   max-height: 120px;
-  padding: 10px 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 15px;
+  margin-top: 2px;
+  padding: 8px 2px;
   resize: none;
-  outline: none;
-  line-height: 1.5;
-  transition: border-color 0.2s;
-  font-family: inherit;
+  border: 0;
+  outline: 0;
+  color: #273142;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-.chat-input:focus {
-  border-color: #1890ff;
+.chat-input::placeholder {
+  color: #b2bbc8;
+}
+
+.input-footer {
+  justify-content: space-between;
+  color: #adb5c1;
+  font-size: 11px;
 }
 
 .send-btn {
-  width: 80px;
-  height: 44px;
-  background: #1890ff;
-  color: #fff;
-  border: none;
+  gap: 7px;
+  padding: 9px 15px;
+  border: 0;
   border-radius: 10px;
-  font-size: 15px;
-  font-weight: 500;
+  color: #fff;
+  background: #5b7cfa;
+  box-shadow: 0 7px 15px rgba(91, 124, 250, 0.22);
   cursor: pointer;
-  transition: background 0.2s;
+  font-size: 13px;
+  font-weight: 600;
+  transition: 0.2s ease;
 }
 
 .send-btn:hover {
-  background: #40a9ff;
+  background: #4b6ce8;
+  transform: translateY(-1px);
 }
 
-.send-btn:active {
-  background: #096dd9;
+@media (max-width: 820px) {
+  .chat-container {
+    width: 100%;
+    border-radius: 0 18px 18px 0;
+  }
+
+  .chat-header {
+    padding: 0 20px;
+  }
+
+  .chat-messages {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
 }
 </style>
