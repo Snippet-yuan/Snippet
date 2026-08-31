@@ -2,7 +2,7 @@
   <div>
     <div class="user-info">
       <div class="friend-list">
-        <FriendList />
+        <ProfileAsideBarLayout />
       </div>
 
       <div class="user-info-content">
@@ -24,7 +24,7 @@
 import { ref } from "vue";
 import SnippetList from "@/layouts/SnippetsTagLayout.vue";
 import UserInfo from "@/components/Profile/UserInfo.vue";
-// import FriendList from "@/components/Profile/FriendList.vue";
+import ProfileAsideBarLayout from "@/layouts/ProfileAsideBarLayout.vue";
 import Footer from "@/components/Footer.vue";
 
 const msg = ref("");

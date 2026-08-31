@@ -1,11 +1,9 @@
 <template>
-  <div>Explore</div>
-  <HomePageLayout />
+  <div></div>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import HomePageLayout from "../layouts/HomePageLayut.vue";
 
 const msg = ref("");
 </script>
