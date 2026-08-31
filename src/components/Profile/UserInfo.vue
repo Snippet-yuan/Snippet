@@ -1,6 +1,7 @@
 <template>
   <div class="user-background">
     <img class="user-background-image" src="@/assets/images/bg-2.jpg" alt="" />
+    <PhImage class="user-background-image-icon" :size="32" />
   </div>
   <div class="user-avatar">
     <img
@@ -8,6 +9,9 @@
       src="@/assets/avatar/user-avatar.jpeg"
       alt=""
     />
+    <div class="user-avatar-icon-container">
+      <PhCamera class="user-avatar-image-icon" :size="32" />
+    </div>
   </div>
   <button class="edit-profile-button">编辑资料</button>
   <div class="user-detail-info">
@@ -30,6 +34,7 @@
 
 <script setup>
 import { ref } from "vue";
+import { PhImage, PhCamera } from "@phosphor-icons/vue";
 
 const msg = ref("");
 </script>

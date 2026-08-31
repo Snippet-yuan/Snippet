@@ -1,6 +1,6 @@
 <template>
-  <div class="conversation-list">
-    <div><OperationBar /></div>
+  <div class="conversation-list" @scroll="handleScroll">
+    <div><OperationBar :is-scrolled="isScrolled" /></div>
 
     <div
       v-for="conversation in conversationList"
@@ -36,6 +36,7 @@
 </template>
 
 <script setup>
+import { ref } from "vue";
 import avatar2 from "@/assets/avatar/user-avatar-2.jpg";
 import avatar3 from "@/assets/avatar/user-avatar-3.jpg";
 import avatar4 from "@/assets/avatar/user-avatar-4.jpg";
@@ -46,6 +47,12 @@ import avatar8 from "@/assets/avatar/user-avatar-8.jpg";
 import OperationBar from "./OperationBar.vue";
 
 defineEmits(["select-conversation"]);
+
+const isScrolled = ref(false);
+
+function handleScroll(event) {
+  isScrolled.value = event.currentTarget.scrollTop > 0;
+}
 
 const conversationList = [
   {
@@ -283,11 +290,12 @@ const conversationList = [
 
 <style scoped>
 .conversation-list {
+  position: relative;
   flex: 0 0 414px;
   height: 100vh;
   overflow: auto;
   scrollbar-color: #e8edf6 transparent;
-  scrollbar-width: 10px;
+  scrollbar-width: thin;
   background: #fff;
   border-right: 1px solid #e8ecf4;
 
