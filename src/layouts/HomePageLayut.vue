@@ -20,6 +20,6 @@ const msg = ref("");
   justify-content: space-between;
   align-items: center;
   background-color: #9f9f9f;
-  padding-left: 256px;
+  padding-left: 212px;
 }
 </style>

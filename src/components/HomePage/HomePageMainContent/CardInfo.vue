@@ -1,0 +1,227 @@
+<template>
+  <div class="side-action-bar">
+    <!-- 用户头像 + 关注 -->
+    <div class="action-item avatar-wrap">
+      <div class="avatar-box">
+        <img
+          class="avatar-img"
+          src="@/assets/avatar/user-avatar-6.jpg"
+          alt="avatar"
+        />
+        <div class="follow-badge">
+          <PhPlus weight="bold" :size="10" color="#fff" />
+        </div>
+      </div>
+      <span class="action-label">John Doe</span>
+    </div>
+
+    <!-- 点赞 -->
+    <div
+      class="action-item"
+      :class="{ liked: isLiked }"
+      @click.stop="toggleLike"
+    >
+      <div class="icon-circle">
+        <PhHeart weight="fill" :size="28" class="action-icon" />
+      </div>
+      <span class="action-count">2.1k</span>
+    </div>
+
+    <!-- 评论 -->
+    <div
+      class="action-item"
+      :class="{ commented: isCommented }"
+      @click.stop="toggleComment"
+    >
+      <div class="icon-circle">
+        <PhChatCircleText weight="fill" :size="28" class="action-icon" />
+      </div>
+      <span class="action-count">342</span>
+    </div>
+
+    <!-- 收藏 -->
+    <div
+      class="action-item"
+      :class="{ collected: isCollected }"
+      @click.stop="toggleCollect"
+    >
+      <div class="icon-circle">
+        <PhBookmarks weight="fill" :size="26" class="action-icon" />
+      </div>
+      <span class="action-count">213</span>
+    </div>
+
+    <!-- 分享 -->
+    <div
+      class="action-item"
+      :class="{ shared: isShared }"
+      @click.stop="toggleShare"
+    >
+      <div class="icon-circle">
+        <PhShareFat weight="fill" :size="26" class="action-icon" />
+      </div>
+      <span class="action-count">Share</span>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from "vue";
+import {
+  PhPlus,
+  PhHeart,
+  PhChatCircleText,
+  PhBookmarks,
+  PhShareFat,
+} from "@phosphor-icons/vue";
+
+const isLiked = ref(false);
+const isCommented = ref(false);
+const isCollected = ref(false);
+const isShared = ref(false);
+
+// 独立切换方法，互不影响
+const toggleLike = () => {
+  isLiked.value = !isLiked.value;
+};
+
+const toggleComment = () => {
+  isCommented.value = !isCommented.value;
+};
+
+const toggleCollect = () => {
+  isCollected.value = !isCollected.value;
+};
+
+const toggleShare = () => {
+  isShared.value = !isShared.value;
+};
+</script>
+
+<style scoped>
+.side-action-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 12px;
+  width: 64px;
+}
+
+.action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  user-select: none;
+}
+
+.action-item:active {
+  transform: scale(0.92);
+}
+
+/* 头像区域 */
+.avatar-wrap {
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.avatar-box {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #1a1a1a;
+  overflow: visible;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.follow-badge {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  background: #ff2d55;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.action-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-top: 8px;
+  max-width: 56px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 图标圆圈 */
+.icon-circle {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease;
+}
+
+.action-icon {
+  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  transition:
+    transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    color 0.2s ease;
+}
+
+.action-item:hover .action-icon {
+  transform: scale(1.15);
+}
+
+/* 点赞后的红色状态 */
+.action-item.liked .action-icon {
+  color: #ff2d55;
+}
+
+/* 评论后的紫色状态 */
+.action-item.commented .action-icon {
+  color: #a855f7;
+}
+
+/* 收藏后的蓝色状态 */
+.action-item.collected .action-icon {
+  color: #3b82f6;
+}
+
+/* 分享后的黄色状态 */
+.action-item.shared .action-icon {
+  color: #fbbf24;
+}
+
+.action-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1;
+}
+</style>

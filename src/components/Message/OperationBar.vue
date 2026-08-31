@@ -1,4 +1,9 @@
 <script setup>
+import {
+  PhUserCirclePlus,
+  PhEnvelope,
+  PhEnvelopeOpen,
+} from "@phosphor-icons/vue";
 defineProps({
   isScrolled: {
     type: Boolean,
@@ -8,7 +13,11 @@ defineProps({
 </script>
 
 <template>
-  <div class="operation-bar" :class="{ 'is-scrolled': isScrolled }">edit</div>
+  <div class="operation-bar" :class="{ 'is-scrolled': isScrolled }">
+    <PhEnvelope :size="32" />
+    <!-- <PhEnvelopeOpen :size="32" /> -->
+    <PhUserCirclePlus :size="32" />
+  </div>
 </template>
 
 <style scoped>
@@ -20,11 +29,11 @@ defineProps({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* Keep the scrollbar gutter outside the glass surface so it remains visible. */
+
   width: 404px;
   height: 80px;
   margin-bottom: 10px;
-  padding: 0 20px;
+  padding: 0 40px;
   box-sizing: border-box;
   border: 1px solid rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.62);
