@@ -19,10 +19,7 @@ const msg = ref("");
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-  margin: 0 20px;
+  background-color: #9f9f9f;
+  padding-left: 256px;
 }
 </style>

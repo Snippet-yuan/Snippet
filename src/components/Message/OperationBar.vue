@@ -41,6 +41,5 @@ defineProps({
 
 .operation-bar.is-scrolled {
   background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 10px 28px rgba(48, 60, 92, 0.12);
 }
 </style>
