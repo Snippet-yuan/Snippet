@@ -29,12 +29,17 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+const props = defineProps({
+  activeTag: {
+    type: String,
+    default: "Snippets",
+  },
+});
 
-const activeTag = ref("Snippets");
+const emit = defineEmits(["update:activeTag"]);
 
 function handleToggleTag(tag) {
-  activeTag.value = tag;
+  emit("update:activeTag", tag);
 }
 </script>
 
