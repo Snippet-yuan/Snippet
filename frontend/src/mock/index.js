@@ -1,12 +1,13 @@
-import { mockLogin } from "./auth";
+import { mockLogin, mockRegister } from "./auth";
 import { mockCreatePost } from "./post";
 
 // 模拟延迟，贴近真实网络环境
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const routes = [
-  { url: "/api/auth/login", method: "POST", handler: mockLogin },
-  { url: "/api/posts", method: "POST", handler: mockCreatePost },
+  { url: "/api/v1/auth/login", method: "POST", handler: mockLogin },
+  { url: "/api/v1/auth/register", method: "POST", handler: mockRegister },
+  { url: "/api/v1/posts", method: "POST", handler: mockCreatePost },
 ];
 
 const realFetch = window.fetch.bind(window);

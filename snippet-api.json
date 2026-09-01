@@ -1,0 +1,1738 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Snippet API",
+    "version": "1.0.0",
+    "description": "Snippet 前端所需全部接口（19 个）\n\n通用约定：\n- 基础路径: /api/v1\n- 除登录/注册外，所有接口需在请求头携带 `Authorization: Bearer <token>`\n- 统一响应格式: { code, message, data }，code === 0 表示成功\n"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api/v1",
+      "description": "本地开发环境"
+    }
+  ],
+  "tags": [
+    {
+      "name": "身份认证",
+      "description": "注册和登录相关接口"
+    },
+    {
+      "name": "用户信息",
+      "description": "当前用户资料相关接口"
+    },
+    {
+      "name": "好友",
+      "description": "好友列表、添加、删除"
+    },
+    {
+      "name": "聊天消息",
+      "description": "会话列表、聊天记录、发送消息"
+    },
+    {
+      "name": "帖子",
+      "description": "帖子列表、详情、创建、点赞、收藏、转发"
+    },
+    {
+      "name": "评价/评论",
+      "description": "帖子评价列表、发表、删除"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "身份认证"
+        ],
+        "operationId": "login",
+        "summary": "邮箱密码登录",
+        "description": "使用邮箱和密码登录，成功后返回 JWT 和用户信息",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "example": {
+                "email": "user@example.com",
+                "password": "123456"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "请求已处理，具体结果查看 code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "token": "eyJhbGciOi...",
+                    "user": {
+                      "id": "1",
+                      "email": "user@example.com",
+                      "nickname": "昵称",
+                      "avatar": "https://cdn.example.com/avatar.png",
+                      "background": "https://cdn.example.com/bg.png"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "身份认证"
+        ],
+        "operationId": "register",
+        "summary": "注册新用户",
+        "description": "创建账号，成功后直接返回 JWT 和用户信息（即注册后自动登录）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              },
+              "example": {
+                "email": "user@example.com",
+                "password": "123456",
+                "nickname": "昵称"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "请求已处理，具体结果查看 code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "注册成功",
+                  "data": {
+                    "token": "eyJhbGciOi...",
+                    "user": {
+                      "id": "1",
+                      "email": "user@example.com",
+                      "nickname": "昵称",
+                      "avatar": "https://cdn.example.com/avatar.png",
+                      "background": "https://cdn.example.com/bg.png"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/me": {
+      "get": {
+        "tags": [
+          "用户信息"
+        ],
+        "operationId": "getCurrentUser",
+        "summary": "获取当前登录用户信息",
+        "description": "获取完整身份信息（含主页背景图）",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "id": "1",
+                    "email": "user@example.com",
+                    "nickname": "昵称",
+                    "avatar": "https://cdn.example.com/avatar.png",
+                    "background": "https://cdn.example.com/bg.png"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未登录或登录已过期"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "用户信息"
+        ],
+        "operationId": "updateUserProfile",
+        "summary": "更新当前用户信息",
+        "description": "只传需要修改的字段（昵称/头像/背景图）",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              },
+              "example": {
+                "nickname": "新昵称"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功，返回更新后的完整用户信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/me/friends": {
+      "get": {
+        "tags": [
+          "好友"
+        ],
+        "operationId": "getFriendList",
+        "summary": "获取我的好友列表",
+        "description": "分页获取好友列表，每项包含好友信息和最近一条消息预览",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "页码"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FriendListResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "items": [
+                      {
+                        "id": "1",
+                        "userId": "2",
+                        "nickname": "好友昵称",
+                        "avatar": "https://cdn.example.com/friend-avatar.png",
+                        "onlineStatus": "ONLINE",
+                        "lastMessage": "你好",
+                        "unreadCount": 3
+                      }
+                    ],
+                    "hasMore": true,
+                    "page": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/friends": {
+      "post": {
+        "tags": [
+          "好友"
+        ],
+        "operationId": "addFriend",
+        "summary": "添加好友",
+        "description": "通过用户 ID 添加好友",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddFriendRequest"
+              },
+              "example": {
+                "userId": "2"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功，返回新添加的好友",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FriendItemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/friends/{friendId}": {
+      "delete": {
+        "tags": [
+          "好友"
+        ],
+        "operationId": "removeFriend",
+        "summary": "删除好友",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "friendId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "好友记录 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptyResult"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "删除成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conversations": {
+      "get": {
+        "tags": [
+          "聊天消息"
+        ],
+        "operationId": "getConversationList",
+        "summary": "获取会话列表",
+        "description": "返回与每个好友的会话，含最后一条消息和未读数",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FriendListResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "items": [
+                      {
+                        "id": "conv_1",
+                        "userId": "2",
+                        "nickname": "好友昵称",
+                        "avatar": "https://cdn.example.com/friend-avatar.png",
+                        "onlineStatus": "ONLINE",
+                        "lastMessage": "你好",
+                        "unreadCount": 2
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conversations/{conversationId}/messages": {
+      "get": {
+        "tags": [
+          "聊天消息"
+        ],
+        "operationId": "getConversationMessages",
+        "summary": "获取某个会话的聊天记录",
+        "description": "分页获取聊天记录，按时间倒序返回",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "会话 ID"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "页码"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageListResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "items": [
+                      {
+                        "id": "msg_1",
+                        "conversationId": "conv_1",
+                        "senderId": "1",
+                        "receiverId": "2",
+                        "content": "消息内容",
+                        "sentAt": "2026-09-01T10:00:00Z"
+                      }
+                    ],
+                    "hasMore": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "聊天消息"
+        ],
+        "operationId": "sendMessage",
+        "summary": "发送一条消息",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "会话 ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              },
+              "example": {
+                "content": "消息内容"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功，返回落库后的完整消息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageItemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/me/posts": {
+      "get": {
+        "tags": [
+          "帖子"
+        ],
+        "operationId": "getMyPosts",
+        "summary": "获取我发布的帖子",
+        "description": "分页获取当前用户发布的帖子，含点赞/收藏/评论/转发数",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "页码"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostListResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "items": [
+                      {
+                        "id": "post_1",
+                        "ownerId": "1",
+                        "ownerNickname": "昵称",
+                        "ownerAvatar": "https://cdn.example.com/avatar.png",
+                        "title": "帖子标题",
+                        "description": "描述内容",
+                        "images": [
+                          "https://cdn.example.com/img1.jpg",
+                          "https://cdn.example.com/img2.jpg"
+                        ],
+                        "counters": {
+                          "likeCount": 10,
+                          "favoriteCount": 5,
+                          "commentCount": 3,
+                          "shareCount": 1
+                        },
+                        "liked": false,
+                        "favorited": true,
+                        "createdAt": "2026-09-01T10:00:00Z"
+                      }
+                    ],
+                    "hasMore": true,
+                    "page": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts": {
+      "post": {
+        "tags": [
+          "帖子"
+        ],
+        "operationId": "createPost",
+        "summary": "创建新帖子",
+        "description": "支持多图上传（multipart/form-data）",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "帖子标题"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "描述内容"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "多张图片"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功，返回创建后的帖子",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostItemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{postId}": {
+      "get": {
+        "tags": [
+          "帖子"
+        ],
+        "operationId": "getPostDetail",
+        "summary": "获取帖子详情",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "帖子 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostItemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{postId}/like": {
+      "post": {
+        "tags": [
+          "帖子"
+        ],
+        "operationId": "likePost",
+        "summary": "点赞 / 取消点赞",
+        "description": "liked=true 点赞，liked=false 取消点赞",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "帖子 ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LikeRequest"
+              },
+              "example": {
+                "liked": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功，返回最新点赞状态和数量",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LikeResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "liked": true,
+                    "counters": {
+                      "likeCount": 11
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{postId}/favorite": {
+      "post": {
+        "tags": [
+          "帖子"
+        ],
+        "operationId": "favoritePost",
+        "summary": "收藏 / 取消收藏",
+        "description": "favorited=true 收藏，favorited=false 取消收藏",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "帖子 ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FavoriteRequest"
+              },
+              "example": {
+                "favorited": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功，返回最新收藏状态和数量",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoriteResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "favorited": true,
+                    "counters": {
+                      "favoriteCount": 6
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{postId}/share": {
+      "post": {
+        "tags": [
+          "帖子"
+        ],
+        "operationId": "sharePost",
+        "summary": "转发帖子",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "帖子 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，返回最新转发数",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "counters": {
+                      "shareCount": 2
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{postId}/comments": {
+      "get": {
+        "tags": [
+          "评价/评论"
+        ],
+        "operationId": "getPostComments",
+        "summary": "获取某条帖子的评价列表",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "帖子 ID"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "页码"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentListResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "items": [
+                      {
+                        "id": "cmt_1",
+                        "postId": "post_1",
+                        "authorId": "2",
+                        "authorNickname": "评论者昵称",
+                        "authorAvatar": "https://cdn.example.com/friend-avatar.png",
+                        "content": "写得好！",
+                        "createdAt": "2026-09-01T11:00:00Z"
+                      }
+                    ],
+                    "hasMore": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "评价/评论"
+        ],
+        "operationId": "createComment",
+        "summary": "评价某条帖子",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "帖子 ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommentRequest"
+              },
+              "example": {
+                "content": "写得好！"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功，返回发表后的评价",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentItemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/comments/{commentId}": {
+      "delete": {
+        "tags": [
+          "评价/评论"
+        ],
+        "operationId": "deleteComment",
+        "summary": "删除自己的评价",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "评价 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptyResult"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "删除成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "登录返回的 token，格式: Authorization: Bearer <token>"
+      }
+    },
+    "schemas": {
+      "CommonResult": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "0 表示成功，其他为业务错误码"
+          },
+          "message": {
+            "type": "string",
+            "description": "提示信息"
+          }
+        }
+      },
+      "EmptyResult": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          }
+        ]
+      },
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "用户 ID"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "邮箱账号（登录账号）"
+          },
+          "nickname": {
+            "type": "string",
+            "description": "昵称"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "头像图片 URL"
+          },
+          "background": {
+            "type": "string",
+            "description": "主页背景图片 URL"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "nickname",
+          "avatar",
+          "background"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "邮箱账号"
+          },
+          "password": {
+            "type": "string",
+            "description": "密码"
+          }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "password",
+          "nickname"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "邮箱账号"
+          },
+          "password": {
+            "type": "string",
+            "description": "密码"
+          },
+          "nickname": {
+            "type": "string",
+            "description": "昵称"
+          }
+        }
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "description": "只传需要修改的字段",
+        "properties": {
+          "nickname": {
+            "type": "string",
+            "description": "新昵称"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "新头像 URL"
+          },
+          "background": {
+            "type": "string",
+            "description": "新背景图 URL"
+          }
+        }
+      },
+      "UserProfileResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/UserProfile"
+              }
+            }
+          }
+        ]
+      },
+      "LoginResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "required": [
+                  "token",
+                  "user"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "JWT 访问凭证"
+                  },
+                  "user": {
+                    "$ref": "#/components/schemas/UserProfile"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Friend": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "好友记录 ID"
+          },
+          "userId": {
+            "type": "string",
+            "description": "好友的用户 ID"
+          },
+          "nickname": {
+            "type": "string",
+            "description": "好友昵称"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "好友头像 URL"
+          },
+          "onlineStatus": {
+            "type": "string",
+            "enum": [
+              "ONLINE",
+              "OFFLINE"
+            ],
+            "description": "在线状态"
+          },
+          "lastMessage": {
+            "type": "string",
+            "description": "最后一条消息预览"
+          },
+          "unreadCount": {
+            "type": "integer",
+            "description": "未读消息数"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "nickname",
+          "avatar",
+          "onlineStatus",
+          "unreadCount"
+        ]
+      },
+      "AddFriendRequest": {
+        "type": "object",
+        "required": [
+          "userId"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "要添加的好友的用户 ID"
+          }
+        }
+      },
+      "FriendListData": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Friend"
+            }
+          },
+          "hasMore": {
+            "type": "boolean",
+            "description": "是否还有下一页"
+          },
+          "page": {
+            "type": "integer",
+            "description": "当前页码"
+          }
+        }
+      },
+      "FriendListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/FriendListData"
+              }
+            }
+          }
+        ]
+      },
+      "FriendItemResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/Friend"
+              }
+            }
+          }
+        ]
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "消息 ID"
+          },
+          "conversationId": {
+            "type": "string",
+            "description": "会话 ID"
+          },
+          "senderId": {
+            "type": "string",
+            "description": "发送者用户 ID"
+          },
+          "receiverId": {
+            "type": "string",
+            "description": "接收者用户 ID"
+          },
+          "content": {
+            "type": "string",
+            "description": "消息内容"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "发送时间"
+          }
+        },
+        "required": [
+          "id",
+          "conversationId",
+          "senderId",
+          "receiverId",
+          "content",
+          "sentAt"
+        ]
+      },
+      "SendMessageRequest": {
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "消息内容"
+          }
+        }
+      },
+      "MessageListData": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MessageListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/MessageListData"
+              }
+            }
+          }
+        ]
+      },
+      "MessageItemResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/Message"
+              }
+            }
+          }
+        ]
+      },
+      "PostCounters": {
+        "type": "object",
+        "properties": {
+          "likeCount": {
+            "type": "integer",
+            "description": "点赞数"
+          },
+          "favoriteCount": {
+            "type": "integer",
+            "description": "收藏数"
+          },
+          "commentCount": {
+            "type": "integer",
+            "description": "评论数"
+          },
+          "shareCount": {
+            "type": "integer",
+            "description": "转发数"
+          }
+        },
+        "required": [
+          "likeCount",
+          "favoriteCount",
+          "commentCount",
+          "shareCount"
+        ]
+      },
+      "Post": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "帖子 ID"
+          },
+          "ownerId": {
+            "type": "string",
+            "description": "作者用户 ID"
+          },
+          "ownerNickname": {
+            "type": "string",
+            "description": "作者昵称"
+          },
+          "ownerAvatar": {
+            "type": "string",
+            "description": "作者头像 URL"
+          },
+          "title": {
+            "type": "string",
+            "description": "标题"
+          },
+          "description": {
+            "type": "string",
+            "description": "描述内容"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "图片 URL 列表"
+          },
+          "counters": {
+            "$ref": "#/components/schemas/PostCounters"
+          },
+          "liked": {
+            "type": "boolean",
+            "description": "当前用户是否已点赞"
+          },
+          "favorited": {
+            "type": "boolean",
+            "description": "当前用户是否已收藏"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "发布时间"
+          }
+        },
+        "required": [
+          "id",
+          "ownerId",
+          "title",
+          "images",
+          "counters",
+          "liked",
+          "favorited",
+          "createdAt"
+        ]
+      },
+      "LikeRequest": {
+        "type": "object",
+        "required": [
+          "liked"
+        ],
+        "properties": {
+          "liked": {
+            "type": "boolean",
+            "description": "true=点赞, false=取消点赞"
+          }
+        }
+      },
+      "FavoriteRequest": {
+        "type": "object",
+        "required": [
+          "favorited"
+        ],
+        "properties": {
+          "favorited": {
+            "type": "boolean",
+            "description": "true=收藏, false=取消收藏"
+          }
+        }
+      },
+      "PostListData": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Post"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "page": {
+            "type": "integer"
+          }
+        }
+      },
+      "PostListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/PostListData"
+              }
+            }
+          }
+        ]
+      },
+      "PostItemResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/Post"
+              }
+            }
+          }
+        ]
+      },
+      "LikeResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "liked": {
+                    "type": "boolean",
+                    "description": "最新点赞状态"
+                  },
+                  "counters": {
+                    "type": "object",
+                    "properties": {
+                      "likeCount": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "FavoriteResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "favorited": {
+                    "type": "boolean",
+                    "description": "最新收藏状态"
+                  },
+                  "counters": {
+                    "type": "object",
+                    "properties": {
+                      "favoriteCount": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ShareResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "counters": {
+                    "type": "object",
+                    "properties": {
+                      "shareCount": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "评价 ID"
+          },
+          "postId": {
+            "type": "string",
+            "description": "被评价的帖子 ID"
+          },
+          "authorId": {
+            "type": "string",
+            "description": "评价者用户 ID"
+          },
+          "authorNickname": {
+            "type": "string",
+            "description": "评价者昵称"
+          },
+          "authorAvatar": {
+            "type": "string",
+            "description": "评价者头像 URL"
+          },
+          "content": {
+            "type": "string",
+            "description": "评价内容"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "评价时间"
+          }
+        },
+        "required": [
+          "id",
+          "postId",
+          "authorId",
+          "authorNickname",
+          "content",
+          "createdAt"
+        ]
+      },
+      "CreateCommentRequest": {
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "评价内容"
+          }
+        }
+      },
+      "CommentListData": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CommentListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/CommentListData"
+              }
+            }
+          }
+        ]
+      },
+      "CommentItemResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CommonResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/Comment"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

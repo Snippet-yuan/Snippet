@@ -1,11 +1,15 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { login as loginApi } from "@/api/auth";
+import { login as loginApi, register as registerApi } from "@/api/auth";
+import { emptyUserProfile } from "@/models/dataModels";
 
+//存放的用户身份数据
+//
 export const useUserStore = defineStore("user", () => {
   // ===== state =====
   const token = ref(localStorage.getItem("snippet_token") || "");
-  const user = ref(null);
+  // 身份数据：邮箱/昵称/头像/背景图（登录时拉一次）
+  const user = ref(emptyUserProfile());
 
   // 登录模态框
   const showLoginModal = ref(false);
@@ -23,16 +27,31 @@ export const useUserStore = defineStore("user", () => {
       password,
     });
 
-    console.log(newToken, userInfo);
+    token.value = newToken;
+    user.value = { ...emptyUserProfile(), ...userInfo };
+    localStorage.setItem("snippet_token", newToken);
+  }
+
+  async function register({ email, password, nickname }) {
+    const { token: newToken, user: userInfo } = await registerApi({
+      email,
+      password,
+      nickname,
+    });
 
     token.value = newToken;
-    user.value = userInfo;
+    user.value = { ...emptyUserProfile(), ...userInfo };
     localStorage.setItem("snippet_token", newToken);
+  }
+
+  // 更新身份字段（改昵称/头像/背景图后调用）
+  function updateProfile(patch) {
+    user.value = { ...user.value, ...patch };
   }
 
   function logout() {
     token.value = "";
-    user.value = null;
+    user.value = emptyUserProfile();
     localStorage.removeItem("snippet_token");
   }
 
@@ -41,7 +60,7 @@ export const useUserStore = defineStore("user", () => {
     const storedToken = localStorage.getItem("snippet_token");
     if (storedToken !== token.value) {
       token.value = storedToken || "";
-      if (!storedToken) user.value = null;
+      if (!storedToken) user.value = emptyUserProfile();
     }
   }
 
@@ -70,7 +89,7 @@ export const useUserStore = defineStore("user", () => {
   window.addEventListener("storage", (e) => {
     if (e.key === "snippet_token") {
       token.value = e.newValue || "";
-      if (!e.newValue) user.value = null;
+      if (!e.newValue) user.value = emptyUserProfile();
     }
   });
 
@@ -88,6 +107,8 @@ export const useUserStore = defineStore("user", () => {
 
     // actions
     login,
+    register,
+    updateProfile,
     logout,
     syncToken,
     openLoginModal,
