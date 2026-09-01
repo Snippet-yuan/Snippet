@@ -1,4 +1,4 @@
-const BASE_URL = "/api/v1";
+const BASE_URL = "http://127.0.0.1:4523/m1/8784448-8574871-default";
 
 // ============================================================
 // 登录
@@ -15,13 +15,13 @@ export async function login({ email, password }) {
     body: JSON.stringify({ email, password }),
   });
 
-  const data = await res.json().catch(() => ({}));
+  const result = await res.json().catch(() => ({}));
 
-  if (!res.ok || data.code !== 0) {
-    throw new Error(data.message || "登录失败，请稍后重试");
+  if (!res.ok || result.code !== 0) {
+    throw new Error(result.message || "登录失败，请稍后重试");
   }
 
-  return data;
+  return result.data;
 }
 
 // ============================================================
@@ -39,59 +39,14 @@ export async function register({ email, password, nickname }) {
     body: JSON.stringify({ email, password, nickname }),
   });
 
-  const data = await res.json().catch(() => ({}));
+  const result = await res.json().catch(() => ({}));
 
-  if (!res.ok || data.code !== 0) {
-    throw new Error(data.message || "注册失败，请稍后重试");
+  console.log(result);
+  console.log(result.data);
+
+  if (!res.ok || result.code !== 0) {
+    throw new Error(result.message || "注册失败，请稍后重试");
   }
 
-  return data;
-}
-
-// ============================================================
-// 获取当前用户信息
-// ============================================================
-
-/**
- * 获取当前登录用户完整身份信息（含背景图）
- * @returns {Promise<{ id: string, email: string, nickname: string, avatar: string, background: string }>}
- */
-export async function fetchCurrentUser() {
-  const res = await fetch(`${BASE_URL}/users/me`, {
-    headers: { Authorization: `Bearer ${localStorage.getItem("snippet_token") || ""}` },
-  });
-
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok || data.code !== 0) {
-    throw new Error(data.message || "获取用户信息失败");
-  }
-
-  return data;
-}
-
-// ============================================================
-// 更新用户信息（改昵称/头像/背景图）
-// ============================================================
-
-/**
- * @param {{ nickname?: string, avatar?: string, background?: string }} patch
- */
-export async function updateUserProfile(patch) {
-  const res = await fetch(`${BASE_URL}/users/me`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("snippet_token") || ""}`,
-    },
-    body: JSON.stringify(patch),
-  });
-
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok || data.code !== 0) {
-    throw new Error(data.message || "更新用户信息失败");
-  }
-
-  return data;
+  return result.data;
 }

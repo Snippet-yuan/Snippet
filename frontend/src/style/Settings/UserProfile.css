@@ -1,0 +1,208 @@
+.settings-card {
+  background-color: var(--base-color-grayscale-0);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.card-header {
+  margin-bottom: 24px;
+}
+
+.card-header h2 {
+  font-size: var(--base-font-size-20);
+  font-weight: var(--base-font-weight-700);
+  color: var(--base-color-grayscale-400);
+}
+
+.card-header p {
+  margin-top: 4px;
+  font-size: var(--base-font-size-14);
+  color: var(--base-color-grayscale-250);
+}
+
+.profile-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--base-color-grayscale-100);
+}
+
+.avatar-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.avatar-wrapper img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-edit {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--base-color-grayscale-0);
+  border-radius: 50%;
+  background-color: var(--base-color-grayscale-400);
+  color: var(--base-color-grayscale-0);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.avatar-edit:hover {
+  background-color: var(--base-color-grayscale-500);
+}
+
+.profile-names h3 {
+  font-size: var(--base-font-size-20);
+  font-weight: var(--base-font-weight-700);
+  color: var(--base-color-grayscale-400);
+}
+
+.profile-names span {
+  font-size: var(--base-font-size-14);
+  color: var(--base-color-grayscale-250);
+}
+
+.form-row {
+  margin-bottom: 20px;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.form-row.inline {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row.inline input {
+  flex: 1;
+}
+
+.form-row label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: var(--base-font-size-14);
+  font-weight: var(--base-font-weight-500);
+  color: var(--base-color-grayscale-400);
+}
+
+.form-row input[type="text"],
+.form-row input[type="email"],
+.form-row input[type="password"],
+.form-row textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--base-color-grayscale-100);
+  border-radius: 12px;
+  font-size: var(--base-font-size-14);
+  color: var(--base-color-grayscale-400);
+  background-color: var(--base-color-grayscale-0);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-row input[type="text"]:focus,
+.form-row input[type="email"]:focus,
+.form-row input[type="password"]:focus,
+.form-row textarea:focus {
+  border-color: var(--base-color-blue-400);
+  box-shadow: 0 0 0 3px rgba(67, 94, 229, 0.12);
+}
+
+.form-row input::placeholder,
+.form-row textarea::placeholder {
+  color: var(--base-color-grayscale-200);
+}
+
+.form-row textarea {
+  resize: vertical;
+  min-height: 90px;
+  line-height: var(--base-font-lineheight-150);
+}
+
+.inline-input {
+  display: flex;
+  gap: 12px;
+}
+
+.inline-input input {
+  flex: 1;
+}
+
+.social-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.social-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--base-color-grayscale-100);
+  border-radius: 12px;
+  color: var(--base-color-grayscale-250);
+}
+
+.social-input:focus-within {
+  border-color: var(--base-color-blue-400);
+  box-shadow: 0 0 0 3px rgba(67, 94, 229, 0.12);
+}
+
+.social-input input {
+  flex: 1;
+  padding: 12px 0;
+  border: none;
+  outline: none;
+  font-size: var(--base-font-size-14);
+  color: var(--base-color-grayscale-400);
+  background: transparent;
+}
+
+.social-input input::placeholder {
+  color: var(--base-color-grayscale-200);
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--base-color-grayscale-100);
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: var(--base-font-size-14);
+  font-weight: var(--base-font-weight-500);
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.btn-primary {
+  border: none;
+  background-color: var(--base-color-red-400);
+  color: var(--base-color-grayscale-0);
+}
+
+.btn-primary:hover {
+  background-color: var(--base-color-red-500);
+}

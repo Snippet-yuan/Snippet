@@ -1,0 +1,114 @@
+.settings-card {
+  background-color: var(--base-color-grayscale-0);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.card-header {
+  margin-bottom: 24px;
+}
+
+.card-header h2 {
+  font-size: var(--base-font-size-20);
+  font-weight: var(--base-font-weight-700);
+  color: var(--base-color-grayscale-400);
+}
+
+.card-header p {
+  margin-top: 4px;
+  font-size: var(--base-font-size-14);
+  color: var(--base-color-grayscale-250);
+}
+
+.email-list {
+  margin-bottom: 20px;
+}
+
+.email-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--base-color-grayscale-100);
+  border-radius: 12px;
+}
+
+.email-address {
+  font-size: var(--base-font-size-14);
+  color: var(--base-color-grayscale-400);
+}
+
+.email-badges {
+  display: flex;
+  gap: 8px;
+}
+
+.email-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: var(--base-font-size-12);
+  font-weight: var(--base-font-weight-500);
+}
+
+.email-badge.primary {
+  background-color: var(--base-color-blue-50);
+  color: var(--base-color-blue-600);
+}
+
+.email-badge.verified {
+  background-color: var(--base-color-green-50);
+  color: var(--base-color-green-500);
+}
+
+.form-row {
+  margin-bottom: 20px;
+}
+
+.form-row.inline {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row.inline input {
+  flex: 1;
+}
+
+.form-row input[type="email"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--base-color-grayscale-100);
+  border-radius: 12px;
+  font-size: var(--base-font-size-14);
+  color: var(--base-color-grayscale-400);
+  background-color: var(--base-color-grayscale-0);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-row input[type="email"]:focus {
+  border-color: var(--base-color-blue-400);
+  box-shadow: 0 0 0 3px rgba(67, 94, 229, 0.12);
+}
+
+.form-row input[type="email"]::placeholder {
+  color: var(--base-color-grayscale-200);
+}
+
+.btn-secondary {
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: var(--base-font-size-14);
+  font-weight: var(--base-font-weight-500);
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+  border: 1px solid var(--base-color-grayscale-100);
+  background-color: var(--base-color-grayscale-0);
+  color: var(--base-color-grayscale-400);
+}
+
+.btn-secondary:hover {
+  background-color: var(--base-color-grayscale-50);
+}

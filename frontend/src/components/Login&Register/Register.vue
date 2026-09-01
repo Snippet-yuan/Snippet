@@ -12,18 +12,38 @@
     </div>
 
     <div class="body-container">
-      <form action="" class="login-form">
+      <form action="" class="login-form" @submit.prevent="handleRegister">
         <label for="" class="email-label">
-          <input type="text" placeholder="电子邮件" />
+          <input v-model="nickname" type="text" placeholder="昵称" />
+          <span v-if="fieldErrors.nickname" class="field-error">
+            {{ fieldErrors.nickname[0] }}
+          </span>
+        </label>
+        <label for="" class="email-label">
+          <input v-model="email" type="text" placeholder="电子邮件" />
+          <span v-if="fieldErrors.email" class="field-error">
+            {{ fieldErrors.email[0] }}
+          </span>
         </label>
         <label for="" class="password-label">
-          <input type="password" placeholder="密码" />
+          <input v-model="password" type="password" placeholder="密码" />
+          <span v-if="fieldErrors.password" class="field-error">
+            {{ fieldErrors.password[0] }}
+          </span>
         </label>
         <label for="" class="confirm-password-label">
-          <input type="password" placeholder="确认密码" />
+          <input
+            v-model="confirmPassword"
+            type="password"
+            placeholder="确认密码"
+          />
+          <span v-if="fieldErrors.confirmPassword" class="field-error">
+            {{ fieldErrors.confirmPassword[0] }}
+          </span>
         </label>
-        <button type="submit" class="login-btn">
-          <div>注 册</div>
+        <p v-if="submitError" class="submit-error">{{ submitError }}</p>
+        <button type="submit" class="login-btn" :disabled="submitting">
+          <div>{{ submitting ? "注册中..." : "注 册" }}</div>
         </button>
       </form>
 
@@ -54,9 +74,50 @@
 </template>
 
 <script setup>
+import { ref } from "vue";
 import { useUserStore } from "@/stores/user";
+import { validateRegisterForm } from "@/utils/validators";
 
 const userStore = useUserStore();
+
+const nickname = ref("");
+const email = ref("");
+const password = ref("");
+const confirmPassword = ref("");
+const fieldErrors = ref({});
+const submitError = ref("");
+const submitting = ref(false);
+
+async function handleRegister() {
+  fieldErrors.value = {};
+  submitError.value = "";
+
+  const errors = validateRegisterForm({
+    nickname: nickname.value,
+    email: email.value,
+    password: password.value,
+    confirmPassword: confirmPassword.value,
+  });
+
+  if (errors) {
+    fieldErrors.value = errors;
+    return;
+  }
+
+  submitting.value = true;
+  try {
+    await userStore.register({
+      email: email.value,
+      password: password.value,
+      nickname: nickname.value,
+    });
+    userStore.closeLoginModal();
+  } catch (error) {
+    submitError.value = error.message || "注册失败，请稍后重试";
+  } finally {
+    submitting.value = false;
+  }
+}
 </script>
 
 <style scoped src="@/style/auth.less"></style>

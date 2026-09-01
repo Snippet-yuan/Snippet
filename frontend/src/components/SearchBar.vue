@@ -53,12 +53,8 @@
     </button>
 
     <!-- 已经登录的时候显示用户头像 -->
-    <RouterLink v-else to="/user/1" class="search-avatar" title="我的主页">
-      <img
-        class="user-avator"
-        src="@/assets/avatar/user-avatar.jpeg"
-        alt="avatar"
-      />
+    <RouterLink v-else :to="userProfilePath" class="search-avatar" title="我的主页">
+      <img class="user-avator" :src="avatarSrc" alt="avatar" />
 
       <button class="search-logout-btn" @click="userStore.logout()">
         <PhSignOut class="search-logout-icon" :size="32" />
@@ -93,6 +89,10 @@ const showDropdown = ref(false);
 const activeCategory = ref("all");
 
 const isMessagePage = computed(() => route.path.startsWith("/message"));
+const avatarSrc = computed(
+  () => userStore.user.avatar || "/src/assets/avatar/user-avatar.jpeg",
+);
+const userProfilePath = computed(() => `/user/${userStore.user.id || 1}`);
 
 const categories = [
   { label: "全部", value: "all", icon: PhDotsThree },
