@@ -7,7 +7,7 @@ export async function mockLogin({ body }) {
     return { code: 400, message: "请输入邮箱和密码" };
   }
 
-  if (email === "test@snippet.com" && password === "123456") {
+  if (email === "test@qq.com" && password === "123456") {
     return Mock.mock({
       code: 0,
       message: "ok",

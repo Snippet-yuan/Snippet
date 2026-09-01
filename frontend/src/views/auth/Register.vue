@@ -52,4 +52,4 @@
 
 <script setup></script>
 
-<style src="@/style/auth.less"></style>
+<style scoped src="@/style/auth.less"></style>

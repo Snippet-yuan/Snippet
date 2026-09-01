@@ -59,7 +59,9 @@
       margin-right: 12px;
       width: 40px;
       color: #4b4b4b;
-      transition: color 0.2s, transform 0.2s;
+      transition:
+        color 0.2s,
+        transform 0.2s;
 
       &.is-open {
         transform: rotate(180deg);
@@ -112,7 +114,9 @@
         border-radius: 8px;
         cursor: pointer;
         color: #4b4b4b;
-        transition: background-color 0.15s, color 0.15s;
+        transition:
+          background-color 0.15s,
+          color 0.15s;
 
         &:hover {
           background-color: #f0f0f0;
@@ -149,7 +153,9 @@
 
 .dropdown-enter-active,
 .dropdown-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .dropdown-enter-from,
@@ -169,4 +175,58 @@
   height: 48px;
   border-radius: 50%;
   margin-left: 16px;
+}
+
+.search-login-btn {
+  margin-left: 16px;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: var(--base-color-grayscale-0);
+  background-color: var(--base-color-grayscale-400);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: var(--base-color-grayscale-500);
+  }
+}
+
+.search-register-btn {
+  margin-left: 12px;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: var(--base-color-grayscale-400);
+  background-color: var(--base-color-grayscale-0);
+  border: 1px solid var(--base-color-grayscale-200);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+
+  &:hover {
+    background-color: var(--base-color-grayscale-100);
+  }
+}
+
+.search-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 16px;
+
+  background-color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  &:hover {
+    background-color: #ebebeb;
+  }
+}
+
+.search-logout-icon {
+  width: 24px;
+  color: var(--base-color-grayscale-400);
 }

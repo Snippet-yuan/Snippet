@@ -7,6 +7,10 @@ import vueDevTools from "vite-plugin-vue-devtools";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), vueDevTools()],
+  build: {
+    // 生产构建也生成 source map，便于在浏览器里调试原始源码
+    sourcemap: true,
+  },
   css: {
     preprocessorOptions: {
       less: {

@@ -36,12 +36,33 @@
         </div>
       </transition>
     </div>
-    <RouterLink to="/user/1" class="search-avatar" title="我的主页">
+    <!-- 没有登录的时候显示登录和注册按钮 -->
+    <button
+      class="search-login-btn"
+      v-if="!userStore.isLoggedIn"
+      @click="userStore.openLoginModal()"
+    >
+      登录
+    </button>
+    <button
+      class="search-register-btn"
+      v-if="!userStore.isLoggedIn"
+      @click="userStore.openRegisterModal()"
+    >
+      注册
+    </button>
+
+    <!-- 已经登录的时候显示用户头像 -->
+    <RouterLink v-else to="/user/1" class="search-avatar" title="我的主页">
       <img
         class="user-avator"
         src="@/assets/avatar/user-avatar.jpeg"
         alt="avatar"
       />
+
+      <button class="search-logout-btn" @click="userStore.logout()">
+        <PhSignOut class="search-logout-icon" :size="32" />
+      </button>
     </RouterLink>
   </div>
 </template>
@@ -61,7 +82,10 @@ import {
   PhStar,
   PhDotsThree,
   PhCheck,
+  PhSignOut,
 } from "@phosphor-icons/vue";
+import { useUserStore } from "@/stores/user";
+const userStore = useUserStore();
 
 const route = useRoute();
 const keyword = ref("");

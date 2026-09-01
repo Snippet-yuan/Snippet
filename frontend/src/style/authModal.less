@@ -1,0 +1,63 @@
+/* 模态登录框：遮罩层 + 过渡动画 + 关闭按钮 */
+
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: hsla(0, 0%, 0%, 0.5);
+
+  .login-container {
+    position: relative;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+  }
+}
+
+/* 关闭按钮（悬浮在卡片右上角） */
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: var(--base-font-size-20);
+  line-height: 1;
+  color: var(--auth-text-sub);
+  background-color: var(--auth-surface-soft);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--auth-text-main);
+    background-color: var(--auth-secondary-hover);
+  }
+}
+
+/* 过渡动画：遮罩淡入淡出 + 卡片轻微缩放 */
+.auth-modal-enter-active,
+.auth-modal-leave-active {
+  transition: opacity 0.2s ease;
+
+  .login-container {
+    transition: transform 0.2s ease;
+  }
+}
+
+.auth-modal-enter-from,
+.auth-modal-leave-to {
+  opacity: 0;
+
+  .login-container {
+    transform: scale(0.96);
+  }
+}

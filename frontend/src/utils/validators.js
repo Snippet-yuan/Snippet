@@ -36,3 +36,23 @@ export function validateLoginForm({ email, password }) {
   // 全部通过 -> undefined；有错误 -> { 字段: [错误文案, ...] }
   return validate({ email, password }, loginConstraints);
 }
+
+// 创建帖子表单的校验规则
+const createPostConstraints = {
+  title: {
+    presence: { allowEmpty: false, message: "请输入标题" },
+    length: { maximum: 100, message: "标题最多 100 个字符" },
+  },
+  description: {
+    length: { maximum: 2000, message: "描述最多 2000 个字符" },
+  },
+};
+
+/**
+ * 校验创建帖子表单
+ * @param {{ title: string, description?: string }} 要校验的表单数据
+ * @returns {undefined | { title?: string[], description?: string[] }}
+ */
+export function validateCreatePostForm({ title, description }) {
+  return validate({ title, description }, createPostConstraints);
+}

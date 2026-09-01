@@ -8,27 +8,32 @@ export const routes = [
         path: "",
         name: "Home",
         component: () => import("@/views/Explore.vue"),
+        // meta: { authOnly: true },
       },
       {
         path: "user/:userId",
         name: "Profile",
         component: () => import("@/views/Profile.vue"),
+        meta: { authOnly: true },
       },
       {
         path: "create",
         name: "Create",
         component: () => import("@/views/Create.vue"),
+        meta: { authOnly: true },
       },
 
       {
         path: "settings",
         name: "Settings",
         component: () => import("@/views/Settings.vue"),
+        meta: { authOnly: true },
       },
       {
         path: "message",
         name: "Message",
         component: () => import("@/views/Message.vue"),
+        meta: { authOnly: true },
       },
     ],
   },
