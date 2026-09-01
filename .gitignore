@@ -37,3 +37,12 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Java / Spring Boot backend
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/.env
+backend/application-local.yml
+backend/*.iml

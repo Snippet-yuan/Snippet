@@ -1,0 +1,29 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: snippet-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: snippet
+      MYSQL_USER: snippet
+      MYSQL_PASSWORD: snippet_dev_password
+      MYSQL_ROOT_PASSWORD: snippet_dev_root_password
+    ports:
+      # 本机 3306 已被其他 MySQL 使用，Snippet 开发库映射到 3307。
+      - "${MYSQL_HOST_PORT:-3307}:3306"
+    volumes:
+      - snippet_mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  redis:
+    image: redis:7-alpine
+    container_name: snippet-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - snippet_redis_data:/data
+
+volumes:
+  snippet_mysql_data:
+  snippet_redis_data:
