@@ -1,7 +1,7 @@
 <template>
   <nav class="nav-bar">
     <a href="#" class="snippet-link">
-      <img src="/Snippet-120x120.svg" alt="Snippet logo" />
+      <img src="/Snippet-120*120.svg" alt="Snippet logo" />
     </a>
     <RouterLink to="/" class="nav-link" v-slot="{ isExactActive }">
       <PhHouseLine :size="28" :weight="isExactActive ? 'fill' : 'regular'" />

@@ -3,7 +3,7 @@
     <div class="login-container">
       <div class="header-container">
         <div class="header-icon">
-          <img src="/Snippet-64x64.svg" alt="Snippet logo" />
+          <img src="/Snippet-64*64.svg" alt="Snippet logo" />
         </div>
         <div class="header-title">
           <h1>创建账号</h1>

@@ -2,7 +2,7 @@
   <footer class="footer">
     <div class="footer-main">
       <RouterLink to="/" class="brand">
-        <!-- <img src="/Snippet-64x64.svg" alt="Snippet" class="brand-logo" /> -->
+        <!-- <img src="/Snippet-64*64.svg" alt="Snippet" class="brand-logo" /> -->
         <img src="/Snippet-text.svg" class="brand-logo" alt="" />
       </RouterLink>
 
