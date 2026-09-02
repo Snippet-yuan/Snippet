@@ -5,11 +5,12 @@ package com.snippet.common.api;
  * Created by macro on 2019/4/19.
  */
 public enum ResultCode implements IErrorCode {
-    SUCCESS(200, "操作成功"),
+    SUCCESS(0, "操作成功"),
     FAILED(500, "操作失败"),
-    VALIDATE_FAILED(404, "参数检验失败"),
+    VALIDATE_FAILED(400, "参数检验失败"),
     UNAUTHORIZED(401, "暂未登录或token已经过期"),
-    FORBIDDEN(403, "没有相关权限");
+    FORBIDDEN(403, "没有相关权限"),
+    CONFLICT(409, "资源冲突");
     private long code;
     private String message;
 

@@ -10,6 +10,7 @@ import com.snippet.auth.vo.UserInfoVO;
 import com.snippet.common.exception.BusinessException;
 import com.snippet.security.token.IssuedToken;
 import com.snippet.security.token.TokenService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
 
         UserAccount oldUser = userAccountMapper.selectByUsername(username);
         if (oldUser != null) {
-            throw new BusinessException("用户已存在");
+            throw new BusinessException(HttpStatus.CONFLICT, "用户已存在");
         }
 
         String password = passwordEncoder.encode(request.getPassword());
@@ -55,10 +56,10 @@ public class AuthServiceImpl implements AuthService {
         UserAccount user = userAccountMapper.selectByUsername(request.getUsername());
         if (user == null
                 || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new BusinessException("账号或密码错误");
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, "账号或密码错误");
         }
         if (!"ACTIVE".equals(user.getStatus())) {
-            throw new BusinessException("账号不可用");
+            throw new BusinessException(HttpStatus.FORBIDDEN, "账号不可用");
         }
 
         IssuedToken issuedToken = tokenService.issueAccessToken(

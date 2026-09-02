@@ -1,5 +1,7 @@
 package com.snippet.security;
 
+import com.snippet.security.handler.RestAccessDeniedHandler;
+import com.snippet.security.handler.RestAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,7 +31,10 @@ public class SecurityConfig {
      * HTTP 请求安全规则。
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            RestAuthenticationEntryPoint authenticationEntryPoint,
+            RestAccessDeniedHandler accessDeniedHandler) throws Exception {
         http
                 /*
                  * 当前项目是 JSON API，不依赖浏览器自动携带 Cookie。
@@ -51,6 +56,10 @@ public class SecurityConfig {
                  */
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -82,7 +91,9 @@ public class SecurityConfig {
                  * 从 Authorization: Bearer <token> 中读取并校验 JWT。
                  */
                 .oauth2ResourceServer(resourceServer -> resourceServer
-                        .jwt(Customizer.withDefaults()));
+                        .jwt(Customizer.withDefaults())
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler));
 
         return http.build();
     }

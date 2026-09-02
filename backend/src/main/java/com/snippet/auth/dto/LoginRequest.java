@@ -11,13 +11,13 @@ import lombok.Setter;
 @Schema(description = "用户登录参数")
 public class LoginRequest {
 
-    @NotBlank
-    @Size(min = 10, max = 20)
+    @NotBlank(message = "账号不能为空")
+    @Size(min = 10, max = 20, message = "账号长度必须在10到20个字符之间")
     @Schema(description = "登录账号", example = "snippetuser1")
     private String username;
 
-    @NotBlank
-    @Size(min = 10, max = 20)
+    @NotBlank(message = "密码不能为空")
+    @Size(min = 10, max = 20, message = "密码长度必须在10到20个字符之间")
     @Schema(description = "登录密码", example = "1234567890")
     private String password;
 }
