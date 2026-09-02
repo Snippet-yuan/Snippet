@@ -24,7 +24,8 @@ const User = sequelize.define(
       allowNull: false,
     },
     avatar: {
-      type: DataTypes.STRING(500),
+      // 头像由前端裁剪为 data URL，图片内容可能超过普通 VARCHAR 的长度限制。
+      type: DataTypes.TEXT,
       allowNull: false,
       defaultValue: "",
     },

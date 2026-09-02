@@ -13,6 +13,8 @@ function sanitizeUser(user) {
 }
 
 async function register({ email, password, nickname }) {
+  email = typeof email === "string" ? email.trim().toLowerCase() : email;
+  nickname = typeof nickname === "string" ? nickname.trim() : nickname;
   if (!email || !password || !nickname) {
     const err = new Error("email、password、nickname 不能为空");
     err.statusCode = 400;
@@ -44,6 +46,7 @@ async function register({ email, password, nickname }) {
 }
 
 async function login({ email, password }) {
+  email = typeof email === "string" ? email.trim().toLowerCase() : email;
   if (!email || !password) {
     const err = new Error("email、password 不能为空");
     err.statusCode = 400;

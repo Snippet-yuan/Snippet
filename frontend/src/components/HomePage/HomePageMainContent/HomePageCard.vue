@@ -60,8 +60,6 @@ onMounted(async () => {
   const res = await getPosts();
 
   posts.value = res.data.items;
-
-  console.log(posts.value[0]);
 });
 
 //--------------------------------------------------------------------------------

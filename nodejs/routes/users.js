@@ -1,4 +1,7 @@
 const express = require("express");
+const multer = require("multer");
+const path = require("path");
+const crypto = require("crypto");
 const { Op } = require("sequelize");
 const { User, Friendship } = require("../models");
 const { JWT_SECRET } = require("../utils/jwt");
@@ -6,6 +9,20 @@ const { success, fail } = require("../utils/response");
 const jwt = require("jsonwebtoken");
 
 const router = express.Router();
+const avatarStorage = multer.diskStorage({
+  destination: path.join(__dirname, "../uploads/avatars"),
+  filename: (req, file, callback) => {
+    const extension = path.extname(file.originalname).toLowerCase() || ".jpg";
+    callback(null, `${Date.now()}-${crypto.randomUUID()}${extension}`);
+  },
+});
+const avatarUpload = multer({
+  storage: avatarStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, callback) => {
+    callback(null, file.mimetype.startsWith("image/"));
+  },
+});
 
 function getUserId(req) {
   const authorization = req.get("Authorization") || "";
@@ -64,6 +81,45 @@ async function getCurrentUser(req) {
 router.get("/users/me", async (req, res) => {
   try {
     res.json(success(sanitizeUser(await getCurrentUser(req))));
+  } catch (err) {
+    const status = err.statusCode || 500;
+    res.status(status).json(fail(err.message, status));
+  }
+});
+
+router.post("/users/me/avatar", avatarUpload.single("avatar"), async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    if (!req.file) return res.status(400).json(fail("请选择图片文件", 400));
+
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    user.avatar = `${baseUrl}/uploads/avatars/${req.file.filename}`;
+    await user.save();
+    res.json(success(sanitizeUser(user), "头像更新成功"));
+  } catch (err) {
+    const status = err.statusCode || 500;
+    res.status(status).json(fail(err.message, status));
+  }
+});
+
+router.patch("/users/me", async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    const { avatar, nickname, background } = req.body || {};
+
+    if (avatar !== undefined) {
+      if (typeof avatar !== "string" || !/^data:image\/(jpeg|jpg|png|webp|gif);base64,/.test(avatar)) {
+        return res.status(400).json(fail("头像格式无效", 400));
+      }
+      if (avatar.length > 5 * 1024 * 1024) {
+        return res.status(413).json(fail("头像文件不能超过 5MB", 413));
+      }
+      user.avatar = avatar;
+    }
+    if (nickname !== undefined) user.nickname = String(nickname).trim();
+    if (background !== undefined) user.background = String(background).trim();
+    await user.save();
+    res.json(success(sanitizeUser(user), "用户资料更新成功"));
   } catch (err) {
     const status = err.statusCode || 500;
     res.status(status).json(fail(err.message, status));
