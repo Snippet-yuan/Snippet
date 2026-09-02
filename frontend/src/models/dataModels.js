@@ -12,11 +12,15 @@
 /**
  * 当前登录用户（身份数据，放全局 user store）
  * @typedef {Object} UserProfile
- * @property {string} id         用户 ID
- * @property {string} email      邮箱账号（登录账号）
- * @property {string} nickname   昵称
- * @property {string} avatar     头像图片 URL
- * @property {string} background 主页背景图片 URL
+ * @property {string} id             用户 ID
+ * @property {string} email          邮箱账号（登录账号）
+ * @property {string} nickname       昵称
+ * @property {string} avatar         头像图片 URL
+ * @property {string} background     主页背景图片 URL
+ * @property {string} bio            个性签名
+ * @property {string} createdAt      注册时间（ISO 字符串）
+ * @property {number} followersCount 粉丝数
+ * @property {number} followingCount 关注数
  */
 export const emptyUserProfile = () => ({
   id: "",
@@ -24,6 +28,10 @@ export const emptyUserProfile = () => ({
   nickname: "",
   avatar: "",
   background: "",
+  bio: "",
+  createdAt: "",
+  followersCount: 0,
+  followingCount: 0,
 });
 
 // ============================================================

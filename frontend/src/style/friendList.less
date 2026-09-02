@@ -79,53 +79,19 @@
 
 .avatar-stack {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  padding: 8px 0 16px;
+  padding: 8px 0 16px 14px;
+  row-gap: 12px;
 }
 
 .avatar-item {
   margin-left: -14px;
   position: relative;
+  z-index: var(--stack-index, 1);
   transition:
     transform 0.22s ease,
     box-shadow 0.22s ease;
-}
-
-.avatar-item:first-child {
-  margin-left: 0;
-}
-
-/* Keep earlier avatars above later ones in the overlapping stack. */
-.avatar-item:nth-child(1) {
-  z-index: 9;
-}
-
-.avatar-item:nth-child(2) {
-  z-index: 8;
-}
-
-.avatar-item:nth-child(3) {
-  z-index: 7;
-}
-
-.avatar-item:nth-child(4) {
-  z-index: 6;
-}
-
-.avatar-item:nth-child(5) {
-  z-index: 5;
-}
-
-.avatar-item:nth-child(6) {
-  z-index: 4;
-}
-
-.avatar-item:nth-child(7) {
-  z-index: 3;
-}
-
-.avatar-item:nth-child(8) {
-  z-index: 2;
 }
 
 .avatar-item:hover {

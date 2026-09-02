@@ -17,6 +17,8 @@ export const useUserInfoStore = defineStore("userInfo", () => {
    * 获取当前用户信息（缓存优先）
    *  - 登录/注册时已存的数据 → 直接使用，不发请求
    *  - 缓存为空（如刷新页面）→ 发请求获取，并同步回 user store
+   *  - 注意：user store 里是轻量快照（无 bio/createdAt 等），
+   *    要展示完整资料（个性签名/注册时间/粉丝数）时请传 force=true 强制请求
    * @param {boolean} force 为 true 时跳过缓存强制刷新
    */
   async function loadUserInfo(force = false) {

@@ -5,66 +5,19 @@
         <p class="aside-card-kicker">Connections</p>
         <h3 class="aside-card-title">你的朋友</h3>
       </div>
-      <span class="aside-card-badge">8</span>
+      <span class="aside-card-badge">{{ friendsStore.friendlist.length }}</span>
     </div>
 
     <div class="avatar-stack" aria-label="好友头像列表">
-      <div class="avatar-item">
-        <img
-          class="avatar-image"
-          src="@/assets/avatar/user-avatar.jpeg"
-          alt="好友头像"
-        />
+      <div
+        v-for="(friend, index) in friendsStore.friendlist"
+        :key="friend.id"
+        class="avatar-item"
+        :style="{ '--stack-index': friendsStore.friendlist.length - index }"
+      >
+        <img class="avatar-image" :src="friend.avatar" :alt="friend.nickname" />
       </div>
-      <div class="avatar-item">
-        <img
-          class="avatar-image"
-          src="@/assets/avatar/user-avatar-2.jpg"
-          alt="好友头像"
-        />
-      </div>
-      <div class="avatar-item">
-        <img
-          class="avatar-image"
-          src="@/assets/avatar/user-avatar-3.jpg"
-          alt="好友头像"
-        />
-      </div>
-      <div class="avatar-item">
-        <img
-          class="avatar-image"
-          src="@/assets/avatar/user-avatar-4.jpg"
-          alt="好友头像"
-        />
-      </div>
-      <div class="avatar-item">
-        <img
-          class="avatar-image"
-          src="@/assets/avatar/user-avatar-5.jpg"
-          alt="好友头像"
-        />
-      </div>
-      <div class="avatar-item">
-        <img
-          class="avatar-image"
-          src="@/assets/avatar/user-avatar-6.jpg"
-          alt="好友头像"
-        />
-      </div>
-      <div class="avatar-item">
-        <img
-          class="avatar-image"
-          src="@/assets/avatar/user-avatar-7.jpg"
-          alt="好友头像"
-        />
-      </div>
-      <div class="avatar-item">
-        <img
-          class="avatar-image"
-          src="@/assets/avatar/user-avatar-8.jpg"
-          alt="好友头像"
-        />
-      </div>
+
       <div class="avatar-item-add">
         <PhUserCirclePlus class="avatar-item-add-icon" :size="32" />
       </div>
@@ -84,7 +37,15 @@
 </template>
 
 <script setup>
+import { onMounted } from "vue";
 import { PhUserCirclePlus } from "@phosphor-icons/vue";
+import { useFriendsStore } from "@/stores/friends";
+
+const friendsStore = useFriendsStore();
+
+onMounted(async () => {
+  await friendsStore.loadFriendsList();
+});
 </script>
 
 <style scoped src="@/style/friendList.less"></style>
