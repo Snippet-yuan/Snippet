@@ -13,7 +13,7 @@ export async function mockCreatePost({ body }) {
   return Mock.mock({
     code: 0,
     message: "发布成功",
-    item: {
+    data: {
       id: "@id",
       ownerId: () => localStorage.getItem("snippet_user_id") || "@id",
       ownerNickname: "@cname",

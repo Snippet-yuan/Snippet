@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:4523/m1/8784448-8574871-default";
+const BASE_URL = "http://localhost:8080/api/v1";
 
 /**
  * 搜索用户（支持昵称模糊搜索 / 用户 ID 精确搜索）

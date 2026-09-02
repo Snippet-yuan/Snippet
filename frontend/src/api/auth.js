@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:4523/m1/8784448-8574871-default";
+const BASE_URL = "http://localhost:8080/api/v1";
 
 // ============================================================
 // 登录
@@ -40,9 +40,6 @@ export async function register({ email, password, nickname }) {
   });
 
   const result = await res.json().catch(() => ({}));
-
-  console.log(result);
-  console.log(result.data);
 
   if (!res.ok || result.code !== 0) {
     throw new Error(result.message || "注册失败，请稍后重试");

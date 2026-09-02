@@ -11,13 +11,15 @@ export async function mockLogin({ body }) {
     return Mock.mock({
       code: 0,
       message: "ok",
-      token: "@guid",
-      user: {
-        id: "@id",
-        email,
-        nickname: "@cname",
-        avatar: "@image('80x80', '#7c3aed', '#fff', 'S')",
-        background: "@image('1200x600', '#4c1d95', '#fff', 'BG')",
+      data: {
+        token: "@guid",
+        user: {
+          id: "@id",
+          email,
+          nickname: "@cname",
+          avatar: "@image('80x80', '#7c3aed', '#fff', 'S')",
+          background: "@image('1200x600', '#4c1d95', '#fff', 'BG')",
+        },
       },
     });
   }
@@ -35,13 +37,15 @@ export async function mockRegister({ body }) {
   return Mock.mock({
     code: 0,
     message: "注册成功",
-    token: "@guid",
-    user: {
-      id: "@id",
-      email,
-      nickname,
-      avatar: "@image('80x80', '#7c3aed', '#fff', 'S')",
-      background: "@image('1200x600', '#4c1d95', '#fff', 'BG')",
+    data: {
+      token: "@guid",
+      user: {
+        id: "@id",
+        email,
+        nickname,
+        avatar: "@image('80x80', '#7c3aed', '#fff', 'S')",
+        background: "@image('1200x600', '#4c1d95', '#fff', 'BG')",
+      },
     },
   });
 }

@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:4523/m1/8784448-8574871-default";
+const BASE_URL = "http://localhost:8080/api/v1";
 //用户进入个人主页 获取个人信息和个人发布的帖子内容
 
 export async function getUserInfo() {
