@@ -4,7 +4,10 @@
   "description": "Snippet 后端服务",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "seed:friends": "node scripts/seedFriends.js",
+    "seed:bios": "node scripts/seedBios.js",
+    "seed:bios": "node scripts/updateUserBios.js"
   },
   "private": true,
   "dependencies": {

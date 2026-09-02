@@ -112,7 +112,9 @@
   color: var(--base-color-grayscale-400);
   background-color: var(--base-color-grayscale-0);
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .form-row input[type="text"]:focus,
@@ -194,7 +196,9 @@
   font-size: var(--base-font-size-14);
   font-weight: var(--base-font-weight-500);
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
 .btn-primary {

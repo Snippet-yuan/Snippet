@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const crypto = require("crypto");
+const fs = require("fs");
 const { Op } = require("sequelize");
 const { User, Friendship } = require("../models");
 const { JWT_SECRET } = require("../utils/jwt");
@@ -9,21 +10,42 @@ const { success, fail } = require("../utils/response");
 const jwt = require("jsonwebtoken");
 
 const router = express.Router();
+const avatarDirectory = path.join(__dirname, "../uploads/avatars");
+const backgroundDirectory = path.join(__dirname, "../uploads/backgrounds");
+fs.mkdirSync(avatarDirectory, { recursive: true });
+fs.mkdirSync(backgroundDirectory, { recursive: true });
 const avatarStorage = multer.diskStorage({
-  destination: path.join(__dirname, "../uploads/avatars"),
+  destination: avatarDirectory,
   filename: (req, file, callback) => {
     const extension = path.extname(file.originalname).toLowerCase() || ".jpg";
     callback(null, `${Date.now()}-${crypto.randomUUID()}${extension}`);
   },
 });
+const backgroundStorage = multer.diskStorage({
+  destination: backgroundDirectory,
+  filename: (req, file, callback) => {
+    const extension = path.extname(file.originalname).toLowerCase() || ".jpg";
+    callback(null, `${Date.now()}-${crypto.randomUUID()}${extension}`);
+  },
+});
+function imageFileFilter(req, file, callback) {
+    if (!file.mimetype.startsWith("image/")) {
+      const error = new Error("请选择图片文件");
+      error.statusCode = 400;
+      return callback(error);
+    }
+    callback(null, true);
+}
 const avatarUpload = multer({
   storage: avatarStorage,
   limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, callback) => {
-    callback(null, file.mimetype.startsWith("image/"));
-  },
+  fileFilter: imageFileFilter,
 });
-
+const backgroundUpload = multer({
+  storage: backgroundStorage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: imageFileFilter,
+});
 function getUserId(req) {
   const authorization = req.get("Authorization") || "";
   const token = authorization.startsWith("Bearer ")
@@ -50,8 +72,10 @@ function sanitizeUser(user) {
     id: String(user.id),
     email: user.email,
     nickname: user.nickname,
+    bio: user.bio,
     avatar: user.avatar,
     background: user.background,
+    createdAt: user.createdAt ? user.createdAt.toISOString() : "",
   };
 }
 
@@ -87,7 +111,15 @@ router.get("/users/me", async (req, res) => {
   }
 });
 
-router.post("/users/me/avatar", avatarUpload.single("avatar"), async (req, res) => {
+router.post("/users/me/avatar", (req, res, next) => {
+  avatarUpload.single("avatar")(req, res, (err) => {
+    if (err) {
+      const status = err.code === "LIMIT_FILE_SIZE" ? 413 : err.statusCode || 400;
+      return res.status(status).json(fail(status === 413 ? "头像文件不能超过 5MB" : err.message, status));
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     const user = await getCurrentUser(req);
     if (!req.file) return res.status(400).json(fail("请选择图片文件", 400));
@@ -120,6 +152,27 @@ router.patch("/users/me", async (req, res) => {
     if (background !== undefined) user.background = String(background).trim();
     await user.save();
     res.json(success(sanitizeUser(user), "用户资料更新成功"));
+  } catch (err) {
+    const status = err.statusCode || 500;
+    res.status(status).json(fail(err.message, status));
+  }
+});
+
+router.post("/users/me/background", (req, res, next) => {
+  backgroundUpload.single("background")(req, res, (err) => {
+    if (err) {
+      const status = err.code === "LIMIT_FILE_SIZE" ? 413 : err.statusCode || 400;
+      return res.status(status).json(fail(status === 413 ? "背景图不能超过 10MB" : err.message, status));
+    }
+    next();
+  });
+}, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    if (!req.file) return res.status(400).json(fail("请选择背景图片", 400));
+    user.background = `${req.protocol}://${req.get("host")}/uploads/backgrounds/${req.file.filename}`;
+    await user.save();
+    res.json(success(sanitizeUser(user), "背景图更新成功"));
   } catch (err) {
     const status = err.statusCode || 500;
     res.status(status).json(fail(err.message, status));

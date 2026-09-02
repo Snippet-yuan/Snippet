@@ -23,6 +23,11 @@ const User = sequelize.define(
       type: DataTypes.STRING(50),
       allowNull: false,
     },
+    bio: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      defaultValue: "",
+    },
     avatar: {
       // 头像由前端裁剪为 data URL，图片内容可能超过普通 VARCHAR 的长度限制。
       type: DataTypes.TEXT,

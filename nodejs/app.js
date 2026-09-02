@@ -20,7 +20,7 @@ async function start() {
     console.log("数据库连接成功");
 
     // 开发阶段同步表结构，生产环境请换成 migration
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     console.log("表同步完成：", Object.keys(sequelize.models).join(", "));
 
     app.use("/api/v1/auth", authRouter);

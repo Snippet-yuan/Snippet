@@ -7,17 +7,14 @@
 
     <div class="profile-preview">
       <div class="avatar-wrapper">
-        <img
-          src="https://avatars.githubusercontent.com/u/1?v=4"
-          alt="avatar"
-        />
+        <img :src="userInfo.avatar" alt="avatar" />
         <button class="avatar-edit" type="button">
           <PhCamera :size="16" />
         </button>
       </div>
       <div class="profile-names">
-        <h3>桥元涛</h3>
-        <span>@qiaoyuantao</span>
+        <h3>{{ before }}</h3>
+        <span>{{ after }}</span>
       </div>
     </div>
 
@@ -56,8 +53,13 @@
 </template>
 
 <script setup>
-import { reactive } from "vue";
+import { computed, onMounted, reactive } from "vue";
 import { PhLink, PhCamera } from "@phosphor-icons/vue";
+import { useUserInfoStore } from "@/stores/userInfo";
+import { storeToRefs } from "pinia";
+
+const userInfoStore = useUserInfoStore();
+const { userInfo } = storeToRefs(userInfoStore);
 
 const form = reactive({
   name: "",
@@ -66,6 +68,27 @@ const form = reactive({
   social2: "",
   social3: "",
 });
+
+onMounted(async () => {
+  await userInfoStore.loadUserInfo(true);
+
+  form.name = userInfo.value.nickname;
+  form.bio = userInfo.value.bio;
+
+  console.log(userInfo.value);
+});
+
+const emailParts = computed(() => {
+  const email = userInfo.value.email || "";
+  const match = email.match(/^([^@]+)@(.+)$/);
+
+  return {
+    before: match?.[1] || email,
+    after: match?.[2] ? `@${match[2]}` : "",
+  };
+});
+const before = computed(() => emailParts.value.before);
+const after = computed(() => emailParts.value.after);
 </script>
 
 <style scoped src="@/style/Settings/UserProfile.css"></style>

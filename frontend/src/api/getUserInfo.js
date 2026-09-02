@@ -23,10 +23,10 @@ export async function getUserInfo() {
  * @param {Blob} avatarFile 裁剪后的图片文件
  * @returns {Promise<object>}
  */
-export async function updateUserAvatar(avatarFile) {
+async function uploadImage(endpoint, fieldName, imageFile, errorMessage) {
   const formData = new FormData();
-  formData.append("avatar", avatarFile, "avatar.jpg");
-  const response = await fetch(`${BASE_URL}/users/me/avatar`, {
+  formData.append(fieldName, imageFile, `${fieldName}.jpg`);
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("snippet_token") || ""}`,
@@ -35,10 +35,21 @@ export async function updateUserAvatar(avatarFile) {
   });
 
   const result = await response.json().catch(() => ({}));
-
   if (!response.ok || result.code !== 0) {
-    throw new Error(result.message || "头像上传失败，请稍后重试");
+    throw new Error(result.message || `${errorMessage}（HTTP ${response.status}）`);
   }
-
   return result.data;
+}
+
+export function updateUserAvatar(avatarFile) {
+  return uploadImage("/users/me/avatar", "avatar", avatarFile, "头像上传失败");
+}
+
+export function updateUserBackground(backgroundFile) {
+  return uploadImage(
+    "/users/me/background",
+    "background",
+    backgroundFile,
+    "背景图上传失败",
+  );
 }

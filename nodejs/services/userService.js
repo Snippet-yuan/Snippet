@@ -7,7 +7,9 @@ function sanitizeUser(user) {
     id: String(user.id),
     email: user.email,
     nickname: user.nickname,
+    bio: user.bio,
     avatar: user.avatar,
+    createdAt: user.createdAt ? user.createdAt.toISOString() : "",
     background: user.background,
   };
 }
@@ -33,6 +35,7 @@ async function register({ email, password, nickname }) {
     email,
     password: hashedPassword,
     nickname,
+    bio: "",
     avatar: "",
     background: "",
   });
