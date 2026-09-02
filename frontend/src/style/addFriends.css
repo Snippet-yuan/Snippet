@@ -3,8 +3,9 @@
   inset: 0;
   z-index: 1000;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 40px;
   background: hsla(0, 0%, 0%, 0.5);
 }
 
@@ -17,14 +18,14 @@
   flex-direction: column;
   padding: 24px;
   background-color: var(--auth-surface);
-  border-radius: 20px 20px 0 0;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 @media (min-width: 640px) {
   .add-friends-panel {
     max-height: 600px;
-    margin-bottom: 40px;
+    margin-top: 40px;
     border-radius: var(--auth-radius-card);
   }
 }
@@ -231,5 +232,5 @@
 
 .add-friends-enter-from .add-friends-panel,
 .add-friends-leave-to .add-friends-panel {
-  transform: translateY(100%);
+  transform: translateY(-100%);
 }
