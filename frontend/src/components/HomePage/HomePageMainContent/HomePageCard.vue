@@ -1,6 +1,6 @@
 <template>
   <div class="card-container">
-    <div class="card-item">
+    <div class="card-item" v-for="post in posts" :key="post.id">
       <div class="card-item-info">
         <div class="media-preview">
           <div class="img-container">
@@ -8,7 +8,7 @@
               <img
                 :key="currentIndex"
                 class="img-item"
-                :src="currentImage"
+                :src="post.images[0]"
                 alt=""
               />
             </Transition>
@@ -36,48 +36,25 @@
           </div>
         </div>
 
-        <CardInfo />
+        <CardInfo
+          v-model:counters="post.counters"
+          v-model:favorited="post.favorited"
+          v-model:liked="post.liked"
+          :owner-avatar="post.ownerAvatar"
+          :owner-nickname="post.ownerNickname"
+        />
       </div>
 
       <div class="card-titl-container">
         <h2 class="card-titl">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          {{ post.title }}
         </h2>
       </div>
 
       <!-- 可折叠描述 -->
       <div class="card-description-container" @click="toggleDescription">
         <p class="card-description" :class="{ collapsed: !isExpanded }">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam,
-          quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
-          Quisquam, quos.Lorem ipsum dolor sit amet consectetur adipisicing
-          elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
-          adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
-          consectetur adipisicing elit. Quisquam, quos.Lorem ipsum dolor sit
-          amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
-          sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum
-          dolor sit amet consectetur adipisicing elit. Quisquam, quos.Lorem
-          ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam,
-          quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
-          Quisquam, quos.Lorem ipsum dolor sit amet consectetur adipisicing
-          elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
-          adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
-          consectetur adipisicing elit. Quisquam, quos.Lorem ipsum dolor sit
-          amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
-          sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum
-          dolor sit amet consectetur adipisicing elit. Quisquam, quos.Lorem
-          ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam,
-          quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
-          Quisquam, quos.Lorem ipsum dolor sit amet consectetur adipisicing
-          elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
-          adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
-          consectetur adipisicing elit. Quisquam, quos.Lorem ipsum dolor sit
-          amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
-          sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum
-          dolor sit amet consectetur adipisicing elit. Quisquam, quos.Lorem
-          ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+          {{ post.description }}
         </p>
 
         <PhCaretDown
@@ -89,7 +66,9 @@
 
       <!-- 发布时间：始终在卡片最底部右下角 -->
       <div class="card-footer">
-        <span class="publish-time">2026-08-31 12:00</span>
+        <span class="publish-time">
+          {{ formatTime(post.createdAt, "MM-DD HH:mm") }}
+        </span>
       </div>
     </div>
   </div>
@@ -106,11 +85,31 @@ import {
   PhCaretRight,
 } from "@phosphor-icons/vue";
 
+//--------------------------------------------------------------------------------
+//获取帖子的长列表
+
+import getPosts from "@/api/getPost";
+import { formatTime } from "@/utils/timeFormat";
+import { onMounted } from "vue";
+
+const posts = ref([]);
+
+onMounted(async () => {
+  const res = await getPosts();
+
+  posts.value = res.data.items;
+
+  console.log(posts.value[0]);
+});
+
+//--------------------------------------------------------------------------------
+
 const images = ref([
   new URL("@/assets/images/bg-3.jpg", import.meta.url).href,
   new URL("@/assets/images/bg-4.jpg", import.meta.url).href,
   new URL("@/assets/images/bg-5.jpg", import.meta.url).href,
 ]);
+
 const currentIndex = ref(0);
 const currentImage = computed(() => images.value[currentIndex.value]);
 const direction = ref(1);

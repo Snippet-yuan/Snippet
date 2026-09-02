@@ -3,16 +3,12 @@
     <!-- 用户头像 + 关注 -->
     <div class="action-item avatar-wrap">
       <div class="avatar-box">
-        <img
-          class="avatar-img"
-          src="@/assets/avatar/user-avatar-6.jpg"
-          alt="avatar"
-        />
+        <img class="avatar-img" :src="ownerAvatar" alt="avatar" />
         <div class="follow-badge">
           <PhPlus weight="bold" :size="10" color="#fff" />
         </div>
       </div>
-      <span class="action-label">John Doe</span>
+      <span class="action-label">{{ ownerNickname }}</span>
     </div>
 
     <!-- 点赞 -->
@@ -24,7 +20,7 @@
       <div class="icon-circle">
         <PhHeart weight="fill" :size="28" class="action-icon" />
       </div>
-      <span class="action-count">2.1k</span>
+      <span class="action-count">{{ counters.likeCount }}</span>
     </div>
 
     <!-- 评论 -->
@@ -36,7 +32,7 @@
       <div class="icon-circle">
         <PhChatCircleText weight="fill" :size="28" class="action-icon" />
       </div>
-      <span class="action-count">342</span>
+      <span class="action-count">{{ counters.commentCount }}</span>
     </div>
 
     <!-- 收藏 -->
@@ -48,7 +44,7 @@
       <div class="icon-circle">
         <PhBookmarks weight="fill" :size="26" class="action-icon" />
       </div>
-      <span class="action-count">213</span>
+      <span class="action-count">{{ counters.favoriteCount }}</span>
     </div>
 
     <!-- 分享 -->
@@ -60,7 +56,7 @@
       <div class="icon-circle">
         <PhShareFat weight="fill" :size="26" class="action-icon" />
       </div>
-      <span class="action-count">Share</span>
+      <span class="action-count">{{ counters.shareCount }}</span>
     </div>
   </div>
 </template>
@@ -74,6 +70,29 @@ import {
   PhBookmarks,
   PhShareFat,
 } from "@phosphor-icons/vue";
+//接受父组件传递的props
+const counters = defineModel("counters", {
+  type: Object,
+  default: () => ({
+    likeCount: 0,
+    commentCount: 0,
+    favoriteCount: 0,
+    shareCount: 0,
+  }),
+});
+const favorited = defineModel("favorited", { type: Boolean, required: true });
+const liked = defineModel("liked", { type: Boolean, required: true });
+
+const props = defineProps({
+  ownerAvatar: {
+    type: String,
+    default: "",
+  },
+  ownerNickname: {
+    type: String,
+    default: "",
+  },
+});
 
 const isLiked = ref(false);
 const isCommented = ref(false);
