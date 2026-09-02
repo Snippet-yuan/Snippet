@@ -16,12 +16,19 @@
         :style="{ '--stack-index': friendsStore.friendlist.length - index }"
       >
         <img class="avatar-image" :src="friend.avatar" :alt="friend.nickname" />
+        <span class="avatar-tooltip" role="tooltip">{{ friend.nickname }}</span>
       </div>
 
-      <div class="avatar-item-add">
+      <div
+        class="avatar-item-add"
+        title="添加好友"
+        @click="showAddFriends = true"
+      >
         <PhUserCirclePlus class="avatar-item-add-icon" :size="32" />
       </div>
     </div>
+
+    <AddFriends v-model="showAddFriends" />
 
     <div class="friend-summary">
       <div class="summary-row">
@@ -37,11 +44,14 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { PhUserCirclePlus } from "@phosphor-icons/vue";
 import { useFriendsStore } from "@/stores/friends";
+import AddFriends from "@/components/AddFriends.vue";
 
 const friendsStore = useFriendsStore();
+const showAddFriends = ref(false);
+1;
 
 onMounted(async () => {
   await friendsStore.loadFriendsList();
