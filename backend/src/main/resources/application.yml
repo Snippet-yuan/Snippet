@@ -15,6 +15,10 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+  servlet:
+    multipart:
+      max-file-size: ${SNIPPET_ASSET_MAX_FILE_SIZE:10MB}
+      max-request-size: ${SNIPPET_ASSET_MAX_REQUEST_SIZE:12MB}
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -51,6 +55,10 @@ knife4j:
     language: zh_cn
 
 snippet:
+  asset:
+    storage-path: ${SNIPPET_ASSET_STORAGE_PATH:./data/assets}
+    public-base-url: ${SNIPPET_ASSET_PUBLIC_BASE_URL:/api/v1/assets/files}
+    max-file-size: ${SNIPPET_ASSET_MAX_FILE_SIZE:10MB}
   security:
     jwt:
       issuer: ${SNIPPET_JWT_ISSUER:snippet-backend}

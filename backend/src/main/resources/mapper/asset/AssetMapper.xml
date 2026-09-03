@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.snippet.asset.mapper.AssetMapper">
+    <insert id="insert"
+            useGeneratedKeys="true"
+            keyProperty="id"
+            keyColumn="id">
+        INSERT INTO asset
+            (owner_id, object_key, original_name, mime_type, file_size, sha256, status)
+        VALUES
+            (#{ownerId}, #{objectKey}, #{originalName}, #{mimeType}, #{fileSize}, #{sha256}, #{status})
+    </insert>
+</mapper>

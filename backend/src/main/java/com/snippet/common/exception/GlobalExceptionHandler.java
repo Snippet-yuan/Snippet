@@ -10,6 +10,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -48,6 +50,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonResult<Void>> handleUnreadableRequest(
             HttpMessageNotReadableException e) {
         return error(HttpStatus.BAD_REQUEST, "请求体格式错误");
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<CommonResult<Void>> handleMissingRequestPart(
+            MissingServletRequestPartException e) {
+        return error(HttpStatus.BAD_REQUEST, "请上传文件");
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<CommonResult<Void>> handleMaxUploadSizeExceeded(
+            MaxUploadSizeExceededException e) {
+        return error(HttpStatus.BAD_REQUEST, "文件大小超过限制");
     }
 
     @ExceptionHandler(DuplicateKeyException.class)

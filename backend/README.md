@@ -40,6 +40,30 @@ GET http://localhost:8080/api/v1/system/health
 GET http://localhost:8080/actuator/health
 ```
 
+## Asset 图片上传
+
+上传接口：
+
+```text
+POST /api/v1/assets/upload
+Authorization: Bearer <access-token>
+Content-Type: multipart/form-data
+file=<图片文件>
+```
+
+接口只接受 PNG、JPEG、GIF 图片，默认单文件上限为 10 MB。资源 owner 从 JWT 的 `sub` 读取，前端不需要也不能传入 `ownerId`。服务会校验图片内容、生成随机对象键、计算 SHA-256，并将文件元数据登记到 V1 的 `asset` 表。
+
+可通过环境变量配置资源存储：
+
+```text
+SNIPPET_ASSET_STORAGE_PATH=./data/assets
+SNIPPET_ASSET_PUBLIC_BASE_URL=/api/v1/assets/files
+SNIPPET_ASSET_MAX_FILE_SIZE=10MB
+SNIPPET_ASSET_MAX_REQUEST_SIZE=12MB
+```
+
+返回结果中的 `url` 由 `SNIPPET_ASSET_PUBLIC_BASE_URL` 与对象键拼接；如果使用对象存储或 CDN，请将该前缀配置为对应的公开访问地址。
+
 ## 业务实现建议
 
 推荐按以下顺序补充：
