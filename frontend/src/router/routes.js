@@ -8,7 +8,7 @@ export const routes = [
         path: "",
         name: "Home",
         component: () => import("@/views/Explore.vue"),
-        // meta: { authOnly: true },
+        meta: { scroll: "keep" },
       },
       {
         path: "user/:userId",

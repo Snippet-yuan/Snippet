@@ -85,8 +85,6 @@ function goToSettings() {
 onMounted(async () => {
   // force=true：个人主页要完整资料，必须强制请求，不走缓存快照
   await userInfoStore.loadUserInfo(true);
-
-  console.log(userInfo.value);
 });
 </script>
 

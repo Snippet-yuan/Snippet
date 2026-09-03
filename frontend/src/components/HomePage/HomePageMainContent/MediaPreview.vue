@@ -1,6 +1,6 @@
 <template>
   <div class="media-preview">
-    <div class="img-container">
+    <div class="img-container" :style="{ width: width + 'px' }">
       <Transition :name="direction === 1 ? 'slide-next' : 'slide-prev'">
         <img
           v-if="currentImage"
@@ -43,6 +43,11 @@ const props = defineProps({
   images: {
     type: Array,
     default: () => [],
+  },
+  // 图片容器宽度（px），默认 600，弹层等小空间可传更小值
+  width: {
+    type: Number,
+    default: 600,
   },
 });
 

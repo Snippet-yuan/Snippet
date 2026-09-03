@@ -49,9 +49,9 @@
                 >
                   {{
                     addStatus[user.id] === "added"
-                      ? "已添加"
+                      ? "等待同意"
                       : addStatus[user.id] === "adding"
-                        ? "添加中…"
+                        ? "发送中…"
                         : "添加"
                   }}
                 </button>

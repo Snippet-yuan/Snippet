@@ -6,6 +6,9 @@ const { sequelize } = require("./models");
 const authRouter = require("./routes/auth");
 const postsRouter = require("./routes/posts");
 const usersRouter = require("./routes/users");
+const commentsRouter = require("./routes/comments");
+const sharesRouter = require("./routes/shares");
+const followsRouter = require("./routes/follows");
 
 const app = express();
 
@@ -25,7 +28,10 @@ async function start() {
 
     app.use("/api/v1/auth", authRouter);
     app.use("/api/v1", usersRouter);
+    app.use("/api/v1/users", followsRouter);
     app.use("/api/v1/posts", postsRouter);
+    app.use("/api/v1/posts", commentsRouter);
+    app.use("/api/v1/posts", sharesRouter);
 
     const PORT = process.env.PORT || 8080;
     app.listen(PORT, () => {

@@ -51,7 +51,6 @@ import AddFriends from "@/components/AddFriends.vue";
 
 const friendsStore = useFriendsStore();
 const showAddFriends = ref(false);
-1;
 
 onMounted(async () => {
   await friendsStore.loadFriendsList();

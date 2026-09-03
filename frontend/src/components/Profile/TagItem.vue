@@ -1,22 +1,22 @@
 <template>
   <div class="tag-item">
-    <img class="cover-image" :src="item.cover" alt="" />
+    <img class="cover-image" :src="post.images[0]" alt="" />
     <div class="title">
-      <h3>{{ item.title }}</h3>
+      <h3>{{ post.title }}</h3>
     </div>
-    <div class="comment-count">
-      <span>{{ item.comments }} 评论</span>
-    </div>
+    <!-- <div class="comment-count">
+      <span>{{ post.comments }} 评论</span>
+    </div> -->
     <div class="user-info">
-      <img class="user-avatar" :src="item.avatar" alt="" />
-      <span class="user-name">{{ item.userName }}</span>
+      <img class="user-avatar" :src="post.ownerAvatar" alt="" />
+      <span class="user-name">{{ post.ownerNickname }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
 defineProps({
-  item: {
+  post: {
     type: Object,
     required: true,
   },

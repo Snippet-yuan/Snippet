@@ -1,6 +1,10 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { getUserInfo as fetchUserInfoApi } from "@/api/getUserInfo";
+import {
+  getUserInfo as fetchUserInfoApi,
+  updateUserProfile as updateUserProfileApi,
+} from "@/api/getUserInfo";
+
 import { useUserStore } from "./user";
 import { emptyUserProfile } from "@/models/dataModels";
 
@@ -40,10 +44,25 @@ export const useUserInfoStore = defineStore("userInfo", () => {
     return userInfo.value;
   }
 
+  /**
+   * 更新当前用户资料（昵称/个性签名等）
+   *  - 调用 PATCH /users/me 更新后端
+   *  - 成功后同步 userInfo store 与全局 user store（导航栏/个人主页立即生效）
+   * @param {{ nickname?: string|null, bio?: string|null, avatar?: File|Blob|string|null, background?: File|Blob|string|null }} patch
+   */
+  async function updateProfile(patch = {}) {
+    const result = await updateUserProfileApi(patch);
+    userInfo.value = { ...emptyUserProfile(), ...userInfo.value, ...result };
+    // 同步回全局 user store（导航栏昵称/头像等会立即更新）
+    userStore.updateProfile(result);
+    return result;
+  }
+
   return {
     userInfo,
     loading,
     hasCache,
     loadUserInfo,
+    updateProfile,
   };
 });

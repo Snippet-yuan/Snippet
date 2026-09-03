@@ -9,6 +9,140 @@
   width: 720px;
   height: auto;
   background-color: rgb(255, 255, 255);
+  position: relative;
+}
+
+/* ============================================================
+   全屏评论弹层
+   点击评论按钮后：淡入遮罩 → 弹层缩放浮现；
+   右侧评论列再从帖子图片下方/左侧滑出，落到帖子右侧
+   ============================================================ */
+.comment-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.comment-overlay-enter-active,
+.comment-overlay-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.comment-overlay-enter-from,
+.comment-overlay-leave-to {
+  opacity: 0;
+}
+
+/* 弹层主体：左侧帖子 / 右侧评论 两栏 */
+.comment-modal {
+  display: flex;
+  width: min(1080px, 100%);
+  height: min(720px, 90vh);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.comment-overlay-enter-active .comment-modal,
+.comment-overlay-leave-active .comment-modal {
+  transition:
+    transform 0.32s cubic-bezier(0.22, 0.8, 0.3, 1),
+    opacity 0.28s ease;
+}
+
+.comment-overlay-enter-from .comment-modal,
+.comment-overlay-leave-to .comment-modal {
+  transform: scale(0.94) translateY(16px);
+  opacity: 0;
+}
+
+/* 左侧：帖子主体（图片 + 标题/描述） */
+.modal-media {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 28px;
+  background: #f7f7f8;
+  overflow-y: auto;
+}
+
+.modal-caption {
+  width: min(460px, 100%);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.caption-avatar {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #e6e6e6;
+}
+
+.caption-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.caption-nickname {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.caption-title {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+}
+
+.caption-desc {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #555;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* 右侧：评论列 —— 初始从图片下方/左侧进入，向右滑出落位 */
+.modal-side {
+  width: 400px;
+  flex-shrink: 0;
+  display: flex;
+  background: #fff;
+  border-left: 1px solid #eeeeee;
+}
+
+.comment-overlay-enter-active .modal-side,
+.comment-overlay-leave-active .modal-side {
+  transition:
+    transform 0.36s cubic-bezier(0.22, 0.8, 0.3, 1) 0.06s,
+    opacity 0.3s ease 0.06s;
+}
+
+.comment-overlay-enter-from .modal-side,
+.comment-overlay-leave-to .modal-side {
+  transform: translateX(-28px);
+  opacity: 0;
 }
 
 .card-item-info {

@@ -2,12 +2,14 @@ const sequelize = require("./db");
 
 const User = require("./user");
 const Friendship = require("./friend");
+const FriendRequest = require("./friendRequest");
 const Conversation = require("./conversation");
 const Message = require("./message");
 const Post = require("./post");
 const Comment = require("./comment");
 const PostLike = require("./postLike");
 const PostFavorite = require("./postFavorite");
+const Follow = require("./follow");
 
 // ============ 关联定义 ============
 
@@ -35,9 +37,19 @@ PostFavorite.belongsTo(User, { foreignKey: "userId", as: "user" });
 Post.hasMany(PostFavorite, { foreignKey: "postId", as: "favorites", onDelete: "CASCADE" });
 PostFavorite.belongsTo(Post, { foreignKey: "postId", as: "post" });
 
+// 好友申请
+FriendRequest.belongsTo(User, { foreignKey: "senderId", as: "sender", onDelete: "CASCADE" });
+FriendRequest.belongsTo(User, { foreignKey: "receiverId", as: "receiver", onDelete: "CASCADE" });
+
 // 好友
 Friendship.belongsTo(User, { foreignKey: "userId", as: "user", onDelete: "CASCADE" });
 Friendship.belongsTo(User, { foreignKey: "friendUserId", as: "friend", onDelete: "CASCADE" });
+
+// 关注（单向）
+User.hasMany(Follow, { foreignKey: "followerId", as: "following", onDelete: "CASCADE" });
+Follow.belongsTo(User, { foreignKey: "followerId", as: "follower", onDelete: "CASCADE" });
+User.hasMany(Follow, { foreignKey: "followedId", as: "followers", onDelete: "CASCADE" });
+Follow.belongsTo(User, { foreignKey: "followedId", as: "followed", onDelete: "CASCADE" });
 
 // 会话 - 参与者
 Conversation.belongsTo(User, { foreignKey: "user1Id", as: "user1", onDelete: "CASCADE" });
@@ -57,10 +69,12 @@ module.exports = {
   sequelize,
   User,
   Friendship,
+  FriendRequest,
   Conversation,
   Message,
   Post,
   Comment,
   PostLike,
   PostFavorite,
+  Follow,
 };

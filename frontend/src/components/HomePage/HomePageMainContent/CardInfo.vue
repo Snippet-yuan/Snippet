@@ -12,11 +12,7 @@
     </div>
 
     <!-- 点赞 -->
-    <div
-      class="action-item"
-      :class="{ liked: isLiked }"
-      @click.stop="toggleLike"
-    >
+    <div class="action-item" :class="{ liked: liked }" @click.stop="toggleLike">
       <div class="icon-circle">
         <PhHeart weight="fill" :size="28" class="action-icon" />
       </div>
@@ -26,7 +22,7 @@
     <!-- 评论 -->
     <div
       class="action-item"
-      :class="{ commented: isCommented }"
+      :class="{ commented: commented }"
       @click.stop="toggleComment"
     >
       <div class="icon-circle">
@@ -38,7 +34,7 @@
     <!-- 收藏 -->
     <div
       class="action-item"
-      :class="{ collected: isCollected }"
+      :class="{ collected: favorited }"
       @click.stop="toggleCollect"
     >
       <div class="icon-circle">
@@ -50,7 +46,7 @@
     <!-- 分享 -->
     <div
       class="action-item"
-      :class="{ shared: isShared }"
+      :class="{ shared: shared }"
       @click.stop="toggleShare"
     >
       <div class="icon-circle">
@@ -62,7 +58,6 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
 import {
   PhPlus,
   PhHeart,
@@ -70,7 +65,10 @@ import {
   PhBookmarks,
   PhShareFat,
 } from "@phosphor-icons/vue";
-//接受父组件传递的props
+import { addFavorite, removeFavorite } from "@/api/operatieFavorite";
+import { addLike, removeLike } from "@/api/operateLike";
+
+// ---------- 四个操作的计数（父组件整体传入，接口返回后由父组件同步） ----------
 const counters = defineModel("counters", {
   type: Object,
   default: () => ({
@@ -80,10 +78,19 @@ const counters = defineModel("counters", {
     shareCount: 0,
   }),
 });
-const favorited = defineModel("favorited", { type: Boolean, required: true });
+
+// ---------- 四个操作的状态（v-model 双向绑定，父组件持有最终数据） ----------
 const liked = defineModel("liked", { type: Boolean, required: true });
+const favorited = defineModel("favorited", { type: Boolean, required: true });
+const commented = defineModel("commented", { type: Boolean, default: false });
+const shared = defineModel("shared", { type: Boolean, default: false });
 
 const props = defineProps({
+  // 当前帖子的 id，调用点赞/收藏/评论/转发接口时拼 URL 用
+  postId: {
+    type: [String, Number],
+    required: true,
+  },
   ownerAvatar: {
     type: String,
     default: "",
@@ -94,26 +101,54 @@ const props = defineProps({
   },
 });
 
-const isLiked = ref(false);
-const isCommented = ref(false);
-const isCollected = ref(false);
-const isShared = ref(false);
+const emit = defineEmits(["toggleComment"]);
 
-// 独立切换方法，互不影响
-const toggleLike = () => {
-  isLiked.value = !isLiked.value;
+// 独立切换方法，互不影响（后续可在方法里调用对应接口）
+const toggleLike = async () => {
+  //没有点赞的情况下,调用点赞接口
+  if (!liked.value) {
+    const data = await addLike(props.postId);
+    liked.value = data.liked;
+    counters.value = {
+      ...counters.value,
+      likeCount: data.likeCount,
+    };
+
+    //已经点赞的情况下,调用取消点赞接口
+  } else {
+    const data = await removeLike(props.postId);
+    liked.value = data.liked;
+    counters.value = {
+      ...counters.value,
+      likeCount: data.likeCount,
+    };
+  }
 };
 
 const toggleComment = () => {
-  isCommented.value = !isCommented.value;
+  commented.value = !commented.value;
+  // 通知父组件打开/关闭该帖子的评论面板
+  emit("toggleComment", commented.value);
 };
 
-const toggleCollect = () => {
-  isCollected.value = !isCollected.value;
+const toggleCollect = async () => {
+  try {
+    const data = favorited.value
+      ? await removeFavorite(props.postId)
+      : await addFavorite(props.postId);
+
+    favorited.value = data.favorited;
+    counters.value = {
+      ...counters.value,
+      favoriteCount: data.favoriteCount,
+    };
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const toggleShare = () => {
-  isShared.value = !isShared.value;
+  shared.value = !shared.value;
 };
 </script>
 

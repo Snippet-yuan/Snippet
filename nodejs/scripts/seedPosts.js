@@ -1,4 +1,11 @@
-const { sequelize, User, Post } = require("../models");
+const {
+  sequelize,
+  User,
+  Post,
+  Comment,
+  PostLike,
+  PostFavorite,
+} = require("../models");
 
 const titles = [
   "周末去爬山，山顶的风景太治愈了",
@@ -35,18 +42,27 @@ function pick(arr, count) {
   return result;
 }
 
+function pickOne(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 async function main() {
   const users = await User.findAll();
-  if (users.length === 0) {
-    console.error("数据库里没有用户，请先运行 node scripts/seedUsers.js");
+  const owner = await User.findOne({ where: { id: 26, email: "3527512976@qq.com" } });
+  if (!owner) {
+    console.error("找不到 id=26 且邮箱为 3527512976@qq.com 的用户");
     process.exit(1);
   }
 
-  const count = parseInt(process.argv[2] || "30", 10);
+  if (users.length < 2) {
+    console.error("数据库中至少需要两个用户，才能生成点赞、收藏和评论数据");
+    process.exit(1);
+  }
+
+  const count = 20;
   const posts = [];
 
   for (let i = 0; i < count; i++) {
-    const owner = users[i % users.length];
     const imgCount = 1 + Math.floor(Math.random() * 3); // 每帖 1~3 张图
     const images = Array.from(
       { length: imgCount },
@@ -66,8 +82,41 @@ async function main() {
   }
 
   const created = await Post.bulkCreate(posts);
-  console.log(`已生成 ${created.length} 条帖子`);
-  console.log(`样例：${created[0].title} | 图片 ${created[0].images.length} 张`);
+  const likes = [];
+  const favorites = [];
+  const comments = [];
+
+  for (const post of created) {
+    const candidates = users.filter((user) => user.id !== owner.id);
+    const likeUsers = pick(candidates, Math.min(candidates.length, 3 + Math.floor(Math.random() * 8)));
+    const favoriteUsers = pick(candidates, Math.min(candidates.length, 1 + Math.floor(Math.random() * 4)));
+
+    likes.push(...likeUsers.map((user) => ({ postId: post.id, userId: user.id })));
+    favorites.push(...favoriteUsers.map((user) => ({ postId: post.id, userId: user.id })));
+    comments.push(
+      ...pick(candidates, Math.min(candidates.length, 1 + Math.floor(Math.random() * 4))).map((user) => ({
+        postId: post.id,
+        authorId: user.id,
+        content: pickOne(["拍得真好看！", "这个地方值得收藏，下次也想去。", "文字和图片都很有氛围感。", "生活记录得很棒，喜欢这组照片。"]),
+      })),
+    );
+  }
+
+  await Promise.all([
+    PostLike.bulkCreate(likes),
+    PostFavorite.bulkCreate(favorites),
+    Comment.bulkCreate(comments),
+  ]);
+  for (const post of created) {
+    await post.update({
+      likeCount: likes.filter((like) => like.postId === post.id).length,
+      favoriteCount: favorites.filter((favorite) => favorite.postId === post.id).length,
+      commentCount: comments.filter((comment) => comment.postId === post.id).length,
+    });
+  }
+
+  console.log(`已为 ${owner.email} 生成 ${created.length} 条帖子`);
+  console.log(`包含 ${created.reduce((total, post) => total + post.images.length, 0)} 张图片、${likes.length} 个点赞、${favorites.length} 个收藏和 ${comments.length} 条评论`);
 
   await sequelize.close();
 }

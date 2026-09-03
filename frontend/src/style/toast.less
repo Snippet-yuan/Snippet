@@ -1,0 +1,49 @@
+.toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100vw - 48px);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: var(--base-font-size-14);
+  line-height: var(--base-font-lineheight-150);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.toast--success {
+  color: var(--base-color-green-500);
+  background-color: var(--base-color-green-50);
+  border: 1px solid var(--base-color-green-200);
+}
+
+.toast--error {
+  color: var(--base-color-red-500);
+  background-color: var(--base-color-red-50);
+  border: 1px solid var(--base-color-red-200);
+}
+
+.toast__message {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--base-color-grayscale-400);
+}
+
+/* 进入/离开动画：淡入淡出 + 自上而下轻微移动 */
+.toast-enter-active,
+.toast-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -12px) scale(0.96);
+}

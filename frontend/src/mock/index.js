@@ -4,7 +4,7 @@ import { mockCreatePost } from "./post";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const routes = [
-  { url: "/api/v1/posts", method: "POST", handler: mockCreatePost },
+  { pathname: "/api/v1/posts", method: "POST", handler: mockCreatePost },
 ];
 
 const realFetch = window.fetch.bind(window);
@@ -12,9 +12,10 @@ const realFetch = window.fetch.bind(window);
 window.fetch = async (input, init = {}) => {
   const url = typeof input === "string" ? input : input.url;
   const method = (init.method || "GET").toUpperCase();
+  const pathname = new URL(url, window.location.origin).pathname;
 
   const route = routes.find(
-    (r) => r.method === method && url.includes(r.url),
+    (r) => r.method === method && pathname === r.pathname,
   );
 
   if (!route) {

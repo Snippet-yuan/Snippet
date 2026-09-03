@@ -125,9 +125,7 @@ export const useUserStore = defineStore("user", () => {
       }
     } else if (e.key === SNIPPET_USER_KEY) {
       try {
-        user.value = e.newValue
-          ? JSON.parse(e.newValue)
-          : emptyUserProfile();
+        user.value = e.newValue ? JSON.parse(e.newValue) : emptyUserProfile();
       } catch {
         user.value = emptyUserProfile();
       }

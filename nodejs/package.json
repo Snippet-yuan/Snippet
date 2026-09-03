@@ -7,6 +7,10 @@
     "start": "node app.js",
     "seed:friends": "node scripts/seedFriends.js",
     "seed:bios": "node scripts/seedBios.js",
+    "seed:posts:user26": "node scripts/seedPosts.js",
+    "seed:posts:others": "node scripts/seedOtherPosts.js",
+    "seed:comments": "node scripts/seedComments.js",
+    "seed:messages:user26": "node scripts/seedMessages.js",
     "seed:bios": "node scripts/updateUserBios.js"
   },
   "private": true,
