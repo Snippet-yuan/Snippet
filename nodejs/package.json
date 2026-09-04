@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "seed:friends": "node scripts/seedFriends.js",
+    "seed:friends:user26": "node scripts/seedUser26Friends.js",
     "seed:bios": "node scripts/seedBios.js",
     "seed:posts:user26": "node scripts/seedPosts.js",
     "seed:posts:others": "node scripts/seedOtherPosts.js",

@@ -7,6 +7,15 @@
   width: 64px;
 }
 
+.side-action-bar::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 20px;
+  width: 680px; /* 只画一半长度 */
+  border-bottom: 1px solid #e3e3e3;
+}
+
 .action-item {
   display: flex;
   flex-direction: column;

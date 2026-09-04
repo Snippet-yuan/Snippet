@@ -2,7 +2,7 @@
   <div class="tag-item">
     <img class="cover-image" :src="post.images[0]" alt="" />
     <div class="title">
-      <h3>{{ post.title }}</h3>
+      <h3>{{ truncateTitle(post.title) }}</h3>
     </div>
     <!-- <div class="comment-count">
       <span>{{ post.comments }} 评论</span>
@@ -21,6 +21,14 @@ defineProps({
     required: true,
   },
 });
+
+// 标题超过 9 个字时省略为前 9 个字 + "..."
+function truncateTitle(title, maxLength = 10) {
+  const chars = Array.from(title || "");
+  return chars.length > maxLength
+    ? `${chars.slice(0, maxLength).join("")}...`
+    : title || "";
+}
 </script>
 
 <style scoped>
@@ -47,7 +55,7 @@ defineProps({
 
 .cover-image {
   width: 100%;
-  height: 240px;
+  height: 235px;
   object-fit: cover;
   border-radius: 8px;
   background-color: #e0e0e0;
@@ -85,8 +93,16 @@ defineProps({
   position: absolute;
   bottom: 34px;
   left: 4px;
+  right: 4px;
   font-size: 14px;
   color: #000;
   font-weight: 600;
+}
+
+.title h3 {
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>

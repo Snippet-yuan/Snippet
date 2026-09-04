@@ -37,8 +37,23 @@
             </div>
 
             <div class="actions">
-              <button class="btn btn--outline">添加好友</button>
-              <button class="btn btn--primary">关注</button>
+              <button
+                v-if="!ownerInfo.isSelf"
+                class="btn btn--outline"
+                :disabled="friendPending || isFriendRequestPending"
+                @click="handleFriendButton"
+              >
+                {{ friendButtonText }}
+              </button>
+              <button
+                v-if="!ownerInfo.isSelf"
+                class="btn"
+                :class="ownerInfo.isFollowing ? 'btn--outline' : 'btn--primary'"
+                :disabled="followPending"
+                @click="handleToggleFollow"
+              >
+                {{ ownerInfo.isFollowing ? "已关注" : "关注" }}
+              </button>
             </div>
           </div>
 
@@ -74,15 +89,18 @@
 
             <!-- 关注数据（有字段再显示） -->
             <div
-              v-if="ownerInfo.following != null || ownerInfo.followers != null"
+              v-if="
+                ownerInfo.followingCount != null ||
+                ownerInfo.followerCount != null
+              "
               class="stats"
             >
               <span class="stat">
-                <strong>{{ formatCount(ownerInfo.following) }}</strong>
+                <strong>{{ formatCount(ownerInfo.followingCount) }}</strong>
                 正在关注
               </span>
               <span class="stat">
-                <strong>{{ formatCount(ownerInfo.followers) }}</strong>
+                <strong>{{ formatCount(ownerInfo.followerCount) }}</strong>
                 关注者
               </span>
             </div>
@@ -97,11 +115,14 @@
 </template>
 
 <script setup>
-import { watch, onBeforeUnmount, ref, onMounted } from "vue";
+import { watch, onBeforeUnmount, ref, computed, onMounted } from "vue";
 import { getPostOwnerInfo } from "@/api/getPostOwnerInfo";
 import { formatTime } from "@/utils/timeFormat";
 import TagItem from "@/components/Profile/TagItem.vue";
 import { getOthersPost } from "@/api/getOthersPost";
+import { addFollow, deleteFollow } from "@/api/addFollow";
+import { deleteFriend } from "@/api/aboutFriends/deleteFriend";
+import { addFriend } from "@/api/aboutFriends/addFriend";
 
 const props = defineProps({
   visible: Boolean,
@@ -112,6 +133,72 @@ const emit = defineEmits(["close"]);
 
 function handleClose() {
   emit("close");
+}
+
+const followPending = ref(false);
+
+async function handleToggleFollow() {
+  if (followPending.value || !props.userId) return;
+  followPending.value = true;
+  try {
+    if (ownerInfo.value.isFollowing) {
+      await deleteFollow(props.userId);
+      ownerInfo.value = {
+        ...ownerInfo.value,
+        isFollowing: false,
+        followerCount: Math.max(0, (ownerInfo.value.followerCount || 0) - 1),
+      };
+    } else {
+      await addFollow(props.userId);
+      ownerInfo.value = {
+        ...ownerInfo.value,
+        isFollowing: true,
+        followerCount: (ownerInfo.value.followerCount || 0) + 1,
+      };
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    followPending.value = false;
+  }
+}
+
+const friendPending = ref(false);
+
+const isFriendRequestPending = computed(() =>
+  ["PENDING_SENT", "PENDING_RECEIVED"].includes(
+    ownerInfo.value.friendRequestStatus,
+  ),
+);
+
+const friendButtonText = computed(() => {
+  if (ownerInfo.value.isFriend) return "删除好友";
+  if (ownerInfo.value.friendRequestStatus === "PENDING_SENT")
+    return "已发送申请";
+  if (ownerInfo.value.friendRequestStatus === "PENDING_RECEIVED")
+    return "待处理申请";
+  return "添加好友";
+});
+
+async function handleFriendButton() {
+  if (friendPending.value || !props.userId) return;
+  friendPending.value = true;
+  try {
+    if (ownerInfo.value.isFriend) {
+      await deleteFriend(props.userId);
+      ownerInfo.value = { ...ownerInfo.value, isFriend: false };
+    } else if (ownerInfo.value.friendRequestStatus === "NONE") {
+      await addFriend(props.userId);
+      ownerInfo.value = {
+        ...ownerInfo.value,
+        friendRequestStatus: "PENDING_SENT",
+      };
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    friendPending.value = false;
+  }
 }
 
 const BODY_CLASS = "post-owner-info-open";

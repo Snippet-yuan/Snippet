@@ -1,6 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const { User, Post, PostLike, PostFavorite } = require("../../models");
+const { Op } = require("sequelize");
+const { User, Post, PostLike, PostFavorite, Friendship, FriendRequest, Follow } = require("../../models");
 const { JWT_SECRET } = require("../../utils/jwt");
 const { success, fail } = require("../../utils/response");
 
@@ -87,16 +88,52 @@ router.get("/:userId", async (req, res) => {
     });
     if (!user) return res.status(404).json(fail("用户不存在", 404));
 
-    const [postCount, favoriteCount] = await Promise.all([
+    const [postCount, favoriteCount, friendship, friendRequest, followingRecord, followerRecord, followingCount, followerCount] = await Promise.all([
       Post.count({ where: { ownerId: targetId } }),
       PostFavorite.count({ where: { userId: targetId } }),
+      Friendship.findOne({
+        where: {
+          [Op.or]: [
+            { userId, friendUserId: targetId },
+            { userId: targetId, friendUserId: userId },
+          ],
+        },
+        attributes: ["id"],
+      }),
+      FriendRequest.findOne({
+        where: {
+          status: "PENDING",
+          [Op.or]: [
+            { senderId: userId, receiverId: targetId },
+            { senderId: targetId, receiverId: userId },
+          ],
+        },
+        attributes: ["id", "senderId", "receiverId", "status"],
+        order: [["id", "DESC"]],
+      }),
+      Follow.findOne({ where: { followerId: userId, followedId: targetId }, attributes: ["id"] }),
+      Follow.findOne({ where: { followerId: targetId, followedId: userId }, attributes: ["id"] }),
+      Follow.count({ where: { followerId: targetId } }),
+      Follow.count({ where: { followedId: targetId } }),
     ]);
+
+    let friendRequestStatus = "NONE";
+    if (friendRequest) {
+      friendRequestStatus = Number(friendRequest.senderId) === userId ? "PENDING_SENT" : "PENDING_RECEIVED";
+    }
 
     res.json(success({
       ...sanitizeProfile(user),
       isSelf: userId === targetId,
+      isFriend: Boolean(friendship),
+      friendRequestStatus,
+      friendRequestId: friendRequest ? String(friendRequest.id) : null,
+      isFollowing: Boolean(followingRecord),
+      followedBy: Boolean(followerRecord),
       postCount,
       favoriteCount,
+      followingCount,
+      followerCount,
     }));
   } catch (error) {
     const status = error.statusCode || 500;

@@ -4,14 +4,14 @@
       <div class="contact-info">
         <div class="contact-avatar-wrap">
           <img
-            :src="activeContact.avatar"
-            :alt="`${activeContact.name}的头像`"
+            v-if="friend.avatar"
+            :src="friend.avatar"
+            :alt="`${friend.nickname || ''}的头像`"
           />
-          <!-- <span class="online-dot"></span> -->
         </div>
         <div class="contact-copy">
           <div class="contact-name-row">
-            <h1>{{ activeContact.name }}</h1>
+            <h1>{{ friend.nickname || "加载中..." }}</h1>
             <span class="contact-label">好友</span>
           </div>
           <p>
@@ -31,27 +31,31 @@
     </header>
 
     <div ref="messagesRef" class="chat-messages">
-      <div class="date-divider"><span>今天 10:24</span></div>
       <div
-        v-for="(msg, index) in messages"
-        :key="`${msg.time}-${index}`"
+        v-for="message in messageList"
+        :key="message.id"
         class="message"
-        :class="msg.type"
+        :class="message.isMine ? 'sent' : 'received'"
       >
         <img
-          v-if="msg.type === 'received'"
+          v-if="!message.isMine"
           class="message-avatar"
-          :src="activeContact.avatar"
-          :alt="`${activeContact.name}的头像`"
+          :src="friend.avatar"
+          :alt="`${friend.nickname || ''}的头像`"
         />
         <div class="message-body">
-          <div class="bubble">{{ msg.content }}</div>
+          <div class="bubble">{{ message.content }}</div>
           <div class="message-meta">
-            <time>{{ msg.time }}</time>
-            <span v-if="msg.type === 'sent'" class="read-status">已读</span>
+            <time>{{ formatTime(message.sentAt) }}</time>
+            <span v-if="message.isMine" class="read-status">已读</span>
           </div>
         </div>
-        <div v-if="msg.type === 'sent'" class="self-avatar">我</div>
+        <img
+          v-if="message.isMine"
+          class="self-avatar"
+          :src="userStore.user.avatar"
+          :alt="我的头像"
+        />
       </div>
     </div>
 
@@ -87,7 +91,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref } from "vue";
+import { nextTick, onMounted, ref, watch } from "vue";
 import {
   PhDotsThreeVertical,
   PhImage,
@@ -96,60 +100,26 @@ import {
   PhPaperPlaneTilt,
   PhSmiley,
 } from "@phosphor-icons/vue";
-import avatar2 from "@/assets/avatar/user-avatar-2.jpg";
-import avatar3 from "@/assets/avatar/user-avatar-3.jpg";
-import avatar4 from "@/assets/avatar/user-avatar-4.jpg";
-import avatar5 from "@/assets/avatar/user-avatar-5.jpg";
-import avatar6 from "@/assets/avatar/user-avatar-6.jpg";
-import avatar7 from "@/assets/avatar/user-avatar-7.jpg";
-import avatar8 from "@/assets/avatar/user-avatar-8.jpg";
+import { getSingleMessage } from "@/api/getSingleMessage";
+import { formatTime } from "@/utils/timeFormat";
+import { useUserStore } from "@/stores/user";
+
+const userStore = useUserStore();
+console.log(userStore.user.avatar);
 
 const props = defineProps({
-  conversation: {
+  conversationId: {
     type: String,
-    default: "林小舟",
+    default: null,
   },
 });
 
-const contacts = {
-  林小舟: { name: "林小舟", avatar: avatar2 },
-  阿柒: { name: "阿柒", avatar: avatar5 },
-  "阿柒 · 产品设计": { name: "阿柒 · 产品设计", avatar: avatar5 },
-  产品讨论组: { name: "产品讨论组", avatar: avatar6 },
-  陈默: { name: "陈默", avatar: avatar7 },
-  "陈默 · 体验设计师": { name: "陈默 · 体验设计师", avatar: avatar7 },
-  灵感交换站: { name: "灵感交换站", avatar: avatar8 },
-  "周宁 · 前端开发": { name: "周宁 · 前端开发", avatar: avatar3 },
-  小满: { name: "小满", avatar: avatar4 },
-};
-
-const activeContact = computed(
-  () => contacts[props.conversation] ?? contacts.林小舟,
-);
 const inputText = ref("");
 const messagesRef = ref(null);
-const messages = ref([
-  { type: "received", content: "你好，有什么可以帮你的吗？", time: "10:24" },
-  { type: "sent", content: "想了解一下这个对话框的设计风格。", time: "10:25" },
-  {
-    type: "received",
-    content:
-      "这是一个简约大气的风格，采用干净的白色背景、柔和的阴影和圆角，整体宽度固定为 770px，消息区域支持滚动。",
-    time: "10:26",
-  },
-  {
-    type: "sent",
-    content: "看起来不错，继续多发几条消息测试滚动效果。",
-    time: "10:27",
-  },
-  {
-    type: "received",
-    content:
-      "好的，这里可以继续添加更多消息内容。当消息过多时，中间区域会出现滚动条，保持整体高度不变。",
-    time: "10:28",
-  },
-  { type: "sent", content: "完美，谢谢！", time: "10:29" },
-]);
+const friend = ref({});
+const messageList = ref([]);
+const page = ref(1);
+const limit = ref(20);
 
 function autoResize(event) {
   const textarea = event.target;
@@ -169,10 +139,11 @@ function sendMessage() {
   if (!content) return;
 
   const now = new Date();
-  messages.value.push({
-    type: "sent",
+  messageList.value.push({
+    id: `local-${Date.now()}`,
+    isMine: true,
     content,
-    time: `${now.getHours().toString().padStart(2, "0")}:${now
+    sentAt: `${now.getHours().toString().padStart(2, "0")}:${now
       .getMinutes()
       .toString()
       .padStart(2, "0")}`,
@@ -185,7 +156,35 @@ function sendMessage() {
   scrollToBottom();
 }
 
-onMounted(scrollToBottom);
+async function loadMessages() {
+  if (!props.conversationId) return;
+  try {
+    const data = await getSingleMessage(
+      props.conversationId,
+      page.value,
+      limit.value,
+    );
+    friend.value = data.friend ?? {};
+    messageList.value = data.items ?? [];
+    scrollToBottom();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+onMounted(() => {
+  loadMessages();
+});
+
+watch(
+  () => props.conversationId,
+  () => {
+    page.value = 1;
+    friend.value = {};
+    messageList.value = [];
+    loadMessages();
+  },
+);
 </script>
 
 <style scoped src="@/style/dialog.less"></style>

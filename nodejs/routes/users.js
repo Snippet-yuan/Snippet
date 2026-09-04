@@ -105,6 +105,7 @@ function sanitizeFriend(friendship) {
     avatar: friendship.friend.avatar,
     onlineStatus: "OFFLINE",
     lastMessage: friendship.lastMessage || "",
+    lastMessageAt: friendship.lastMessageAt ? friendship.lastMessageAt.toISOString() : "",
     unreadCount: friendship.unreadCount || 0,
   };
 }
@@ -500,17 +501,41 @@ router.get("/users/me/conversations/:conversationId/messages", async (req, res) 
 
 router.get("/users/me/friends", async (req, res) => {
   try {
-    const userId = getUserId(req);
+    const userId = Number(getUserId(req));
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 20));
-    const friendships = await Friendship.findAll({
-      where: { userId },
-      include: [{ model: User, as: "friend", attributes: ["id", "nickname", "avatar"] }],
-      order: [["id", "DESC"]],
-      limit,
-      offset: (page - 1) * limit,
-    });
-    res.json(success({ items: friendships.map(sanitizeFriend), hasMore: friendships.length === limit, page }));
+    const [friendships, conversations] = await Promise.all([
+      Friendship.findAll({
+        where: { userId },
+        include: [{ model: User, as: "friend", attributes: ["id", "nickname", "avatar"] }],
+        order: [["id", "DESC"]],
+        limit,
+        offset: (page - 1) * limit,
+      }),
+      Conversation.findAll({
+        where: { [Op.or]: [{ user1Id: userId }, { user2Id: userId }] },
+        attributes: ["id", "user1Id", "user2Id"],
+      }),
+    ]);
+
+    // 每个好友（会话另一方）对应一条会话记录
+    const conversationIdByFriend = new Map();
+    for (const conversation of conversations) {
+      const friendUserId =
+        Number(conversation.user1Id) === userId ? conversation.user2Id : conversation.user1Id;
+      if (!conversationIdByFriend.has(String(friendUserId))) {
+        conversationIdByFriend.set(String(friendUserId), String(conversation.id));
+      }
+    }
+
+    res.json(success({
+      items: friendships.map((friendship) => ({
+        ...sanitizeFriend(friendship),
+        conversationId: conversationIdByFriend.get(String(friendship.friendUserId)) || null,
+      })),
+      hasMore: friendships.length === limit,
+      page,
+    }));
   } catch (err) {
     const status = err.statusCode || 500;
     res.status(status).json(fail(err.message, status));
@@ -559,6 +584,47 @@ router.post("/friends", async (req, res) => {
   } catch (err) {
     const status = err.statusCode || 500;
     res.status(status).json(fail(err.message, status));
+  }
+});
+
+// DELETE /api/v1/friends/:userId — 删除好友（按目标用户 ID，幂等）
+router.delete("/friends/:userId", async (req, res) => {
+  try {
+    const userId = Number(getUserId(req));
+    const targetId = Number(req.params.userId);
+    if (!Number.isInteger(targetId) || targetId <= 0) {
+      return res.status(400).json(fail("userId 无效", 400));
+    }
+    if (userId === targetId) {
+      return res.status(400).json(fail("不能删除自己", 400));
+    }
+
+    const destroyed = await Friendship.destroy({
+      where: {
+        [Op.or]: [
+          { userId, friendUserId: targetId },
+          { userId: targetId, friendUserId: userId },
+        ],
+      },
+    });
+
+    // 好友关系解除后清理历史申请记录，避免以后重新申请被旧记录拦截
+    await FriendRequest.destroy({
+      where: {
+        [Op.or]: [
+          { senderId: userId, receiverId: targetId },
+          { senderId: targetId, receiverId: userId },
+        ],
+      },
+    });
+
+    if (!destroyed) {
+      return res.status(404).json(fail("你们还不是好友", 404));
+    }
+    res.json(success({ userId: String(targetId), isFriend: false }, "已删除好友"));
+  } catch (err) {
+    const status = err.statusCode || 500;
+    res.status(status).json(fail(err.message || "删除好友失败，请稍后重试", status));
   }
 });
 
