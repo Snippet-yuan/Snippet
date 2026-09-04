@@ -3,6 +3,7 @@ package com.snippet.common;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.snippet.auth.controller.AuthController;
+import com.snippet.auth.dto.ChangePasswordRequest;
 import com.snippet.auth.dto.LoginRequest;
 import com.snippet.auth.dto.LoginResponse;
 import com.snippet.auth.dto.RegisterRequest;
@@ -132,6 +133,11 @@ class HttpErrorContractTest {
                 throw loginFailure;
             }
             return null;
+        }
+
+        @Override
+        public void changePassword(Long userId, ChangePasswordRequest request) {
+            // 当前错误契约测试不覆盖密码修改业务。
         }
     }
 }

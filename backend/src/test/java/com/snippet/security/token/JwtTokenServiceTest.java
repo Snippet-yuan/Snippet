@@ -34,11 +34,12 @@ class JwtTokenServiceTest {
                 Duration.ofMinutes(30)
         );
 
-        IssuedToken issuedToken = tokenService.issueAccessToken(42L, "snippet-user");
+        IssuedToken issuedToken = tokenService.issueAccessToken(42L, "snippet-user", 3L);
         Jwt jwt = decoder.decode(issuedToken.value());
 
         assertEquals("42", jwt.getSubject());
         assertEquals("snippet-user", jwt.getClaimAsString("username"));
+        assertEquals(3L, ((Number) jwt.getClaim("token_version")).longValue());
         assertEquals(issuer, jwt.getClaimAsString("iss"));
         assertEquals(1800L, issuedToken.expiresInSeconds());
 

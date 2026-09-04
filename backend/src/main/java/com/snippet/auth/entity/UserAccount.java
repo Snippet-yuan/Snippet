@@ -19,6 +19,8 @@ public class UserAccount {
 
     private String status;
 
+    private long tokenVersion;
+
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }
