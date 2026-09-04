@@ -10,18 +10,14 @@ import TagItem from "../TagItem.vue";
 import Empty from "@/components/Empty.vue";
 
 import { useUserPostsStore } from "@/stores/userPosts";
-import { onMounted, watch } from "vue";
+import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 
 const userPostsStore = useUserPostsStore();
-const { postList, loading } = storeToRefs(userPostsStore);
+const { postList } = storeToRefs(userPostsStore);
 
 onMounted(async () => {
   await userPostsStore.fetchUserPosts(1, 20);
-});
-
-watch(userPostsStore.postList, (newVal) => {
-  snippets.value = newVal;
 });
 </script>
 

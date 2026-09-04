@@ -6,6 +6,7 @@
 
         <CardInfo
           :post-id="post.id"
+          :user-id="post.ownerId"
           v-model:counters="post.counters"
           v-model:liked="post.liked"
           v-model:favorited="post.favorited"

@@ -14,8 +14,10 @@ import YourFollowers from "@/components/Profile/AsideBar/YourFollowers.vue";
 
 <style scoped>
 .profile-aside-bar {
+  width: 420px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background-color: #e3e3e3;
 }
 </style>

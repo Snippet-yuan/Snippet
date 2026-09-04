@@ -7,4 +7,4 @@
 import LoginModal from "@/components/Login&Register/LoginModal.vue";
 </script>
 
-<style></style>
+<style scoped src="@/style/app.less"></style>

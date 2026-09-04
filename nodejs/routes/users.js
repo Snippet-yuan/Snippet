@@ -614,4 +614,7 @@ router.patch("/friend-requests/:id", async (req, res) => {
   }
 });
 
+// 挂载用户主页资料路由：/users/:userId、/users/:userId/posts、/users/:userId/favorites
+router.use("/users", usersProfileRouter);
+
 module.exports = router;

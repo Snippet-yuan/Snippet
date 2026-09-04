@@ -1,7 +1,12 @@
 <template>
+  <PostOwnerInfo
+    :userId="userId"
+    :visible="ownerInfoVisible"
+    @close="ownerInfoVisible = false"
+  />
   <div class="side-action-bar">
     <!-- 用户头像 + 关注 -->
-    <div class="action-item avatar-wrap">
+    <div class="action-item avatar-wrap" @click.stop="ownerInfoVisible = true">
       <div class="avatar-box">
         <img class="avatar-img" :src="ownerAvatar" alt="avatar" />
         <div class="follow-badge">
@@ -67,6 +72,8 @@ import {
 } from "@phosphor-icons/vue";
 import { addFavorite, removeFavorite } from "@/api/operatieFavorite";
 import { addLike, removeLike } from "@/api/operateLike";
+import PostOwnerInfo from "@/components/PostOwnerInfo.vue";
+import { ref } from "vue";
 
 // ---------- 四个操作的计数（父组件整体传入，接口返回后由父组件同步） ----------
 const counters = defineModel("counters", {
@@ -87,6 +94,10 @@ const shared = defineModel("shared", { type: Boolean, default: false });
 
 const props = defineProps({
   // 当前帖子的 id，调用点赞/收藏/评论/转发接口时拼 URL 用
+  userId: {
+    type: [String, Number],
+    required: true,
+  },
   postId: {
     type: [String, Number],
     required: true,
@@ -102,6 +113,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["toggleComment"]);
+
+// 帖主信息弹窗的显示状态
+const ownerInfoVisible = ref(false);
 
 // 独立切换方法，互不影响（后续可在方法里调用对应接口）
 const toggleLike = async () => {
