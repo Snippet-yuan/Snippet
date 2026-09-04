@@ -1,8 +1,11 @@
 package com.snippet.security;
 
+import com.snippet.auth.mapper.UserAccountMapper;
 import com.snippet.security.handler.RestAccessDeniedHandler;
 import com.snippet.security.handler.RestAuthenticationEntryPoint;
+import com.snippet.security.token.JwtTokenVersionAuthenticationConverter;
 import com.snippet.user.controller.UserController;
+import com.snippet.user.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -11,6 +14,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.Mockito.mock;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -48,6 +53,22 @@ class SecurityConfigContractTest {
             return token -> {
                 throw new UnsupportedOperationException("JWT decoding is not used in this test");
             };
+        }
+
+        @Bean
+        UserAccountMapper userAccountMapper() {
+            return mock(UserAccountMapper.class);
+        }
+
+        @Bean
+        JwtTokenVersionAuthenticationConverter jwtTokenVersionAuthenticationConverter(
+                UserAccountMapper userAccountMapper) {
+            return new JwtTokenVersionAuthenticationConverter(userAccountMapper);
+        }
+
+        @Bean
+        UserService userService() {
+            return mock(UserService.class);
         }
     }
 }

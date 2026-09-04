@@ -1,5 +1,6 @@
 package com.snippet.auth.service;
 
+import com.snippet.auth.dto.ChangePasswordRequest;
 import com.snippet.auth.dto.LoginRequest;
 import com.snippet.auth.dto.LoginResponse;
 import com.snippet.auth.dto.RegisterRequest;
@@ -13,4 +14,6 @@ public interface AuthService {
     UserInfoVO register(RegisterRequest request);
 
     LoginResponse login(LoginRequest request);
+
+    void changePassword(Long userId, ChangePasswordRequest request);
 }

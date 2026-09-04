@@ -15,6 +15,8 @@ import java.util.UUID;
 @Service
 public class JwtTokenService implements TokenService {
 
+    private static final String TOKEN_VERSION_CLAIM = "token_version";
+
     private final JwtEncoder jwtEncoder;
     private final String issuer;
     private final Duration accessTokenTtl;
@@ -29,7 +31,7 @@ public class JwtTokenService implements TokenService {
     }
 
     @Override
-    public IssuedToken issueAccessToken(Long userId, String username) {
+    public IssuedToken issueAccessToken(Long userId, String username, long tokenVersion) {
         Instant issuedAt = Instant.now();
         Instant expiresAt = issuedAt.plus(accessTokenTtl);
 
@@ -40,6 +42,7 @@ public class JwtTokenService implements TokenService {
                 .expiresAt(expiresAt)
                 .id(UUID.randomUUID().toString())
                 .claim("username", username)
+                .claim(TOKEN_VERSION_CLAIM, tokenVersion)
                 .build();
 
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();

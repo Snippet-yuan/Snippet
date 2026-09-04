@@ -12,4 +12,14 @@
         VALUES
             (#{ownerId}, #{objectKey}, #{originalName}, #{mimeType}, #{fileSize}, #{sha256}, #{status})
     </insert>
+
+    <select id="existsOwnedReadyById" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+            FROM asset
+            WHERE id = #{assetId}
+              AND owner_id = #{ownerId}
+              AND status = 'READY'
+        )
+    </select>
 </mapper>

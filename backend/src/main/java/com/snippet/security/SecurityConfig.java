@@ -2,10 +2,10 @@ package com.snippet.security;
 
 import com.snippet.security.handler.RestAccessDeniedHandler;
 import com.snippet.security.handler.RestAuthenticationEntryPoint;
+import com.snippet.security.token.JwtTokenVersionAuthenticationConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -34,7 +34,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             RestAuthenticationEntryPoint authenticationEntryPoint,
-            RestAccessDeniedHandler accessDeniedHandler) throws Exception {
+            RestAccessDeniedHandler accessDeniedHandler,
+            JwtTokenVersionAuthenticationConverter tokenVersionConverter) throws Exception {
         http
                 /*
                  * 当前项目是 JSON API，不依赖浏览器自动携带 Cookie。
@@ -88,10 +89,12 @@ public class SecurityConfig {
                 )
 
                 /*
-                 * 从 Authorization: Bearer <token> 中读取并校验 JWT。
+                 * 先由资源服务器校验 JWT 签名、issuer、过期时间，
+                 * 再由自定义转换器校验数据库中的 token_version 和账号状态。
                  */
                 .oauth2ResourceServer(resourceServer -> resourceServer
-                        .jwt(Customizer.withDefaults())
+                        .jwt(jwt -> jwt
+                                .jwtAuthenticationConverter(tokenVersionConverter))
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler));
 
