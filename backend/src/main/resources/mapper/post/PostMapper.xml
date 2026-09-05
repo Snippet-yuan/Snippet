@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.snippet.post.mapper.PostMapper">
+    <insert id="insertPost"
+            useGeneratedKeys="true"
+            keyProperty="id"
+            keyColumn="id">
+        INSERT INTO post
+            (owner_id, title, slug, status)
+        VALUES
+            (#{ownerId}, #{title}, #{slug}, #{status})
+    </insert>
+
+    <insert id="insertInitialDraft"
+            useGeneratedKeys="true"
+            keyProperty="id"
+            keyColumn="id">
+        INSERT INTO post_draft
+            (post_id, content_json, schema_version, version, updated_by)
+        VALUES
+            (#{postId}, #{contentJson}, #{schemaVersion}, #{version}, #{updatedBy})
+    </insert>
+
+    <select id="selectByIdAndOwnerId" resultType="com.snippet.post.entity.Post">
+        SELECT
+            id,
+            owner_id,
+            title,
+            description,
+            slug,
+            status,
+            published_revision_id,
+            created_at,
+            updated_at,
+            published_at
+        FROM post
+        WHERE id = #{postId}
+          AND owner_id = #{ownerId}
+        LIMIT 1
+    </select>
+
+    <select id="selectPublishedBySlug" resultType="com.snippet.post.entity.Post">
+        SELECT
+            id,
+            owner_id,
+            title,
+            description,
+            slug,
+            status,
+            published_revision_id,
+            created_at,
+            updated_at,
+            published_at
+        FROM post
+        WHERE slug = #{slug}
+          AND status = 'PUBLISHED'
+        LIMIT 1
+    </select>
+
+    <select id="selectRevisionById" resultType="com.snippet.post.entity.PostRevision">
+        SELECT
+            id,
+            post_id,
+            revision_no,
+            content_json,
+            schema_version,
+            created_by,
+            created_at
+        FROM post_revision
+        WHERE id = #{revisionId}
+        LIMIT 1
+    </select>
+
+    <select id="selectPublishedById" resultType="com.snippet.post.entity.Post">
+        SELECT
+            id,
+            status
+        FROM post
+        WHERE id = #{postId}
+          AND status = 'PUBLISHED'
+        LIMIT 1
+    </select>
+
+    <select id="existsLike" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+            FROM post_like
+            WHERE post_id = #{postId}
+              AND user_id = #{userId}
+        )
+    </select>
+
+    <insert id="insertLike">
+        INSERT INTO post_like (post_id, user_id)
+        VALUES (#{postId}, #{userId})
+    </insert>
+
+    <delete id="deleteLike">
+        DELETE FROM post_like
+        WHERE post_id = #{postId}
+          AND user_id = #{userId}
+    </delete>
+
+    <select id="existsFavorite" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+            FROM post_favorite
+            WHERE post_id = #{postId}
+              AND user_id = #{userId}
+        )
+    </select>
+
+    <insert id="insertFavorite">
+        INSERT INTO post_favorite (post_id, user_id)
+        VALUES (#{postId}, #{userId})
+    </insert>
+
+    <delete id="deleteFavorite">
+        DELETE FROM post_favorite
+        WHERE post_id = #{postId}
+          AND user_id = #{userId}
+    </delete>
+
+    <insert id="insertComment"
+            useGeneratedKeys="true"
+            keyProperty="id"
+            keyColumn="id">
+        INSERT INTO post_comment
+            (post_id, author_id, content)
+        VALUES
+            (#{postId}, #{authorId}, #{content})
+    </insert>
+
+    <select id="selectCommentById"
+            resultType="com.snippet.post.entity.PostComment">
+        SELECT
+            c.id,
+            c.post_id,
+            c.author_id,
+            COALESCE(NULLIF(TRIM(u.nickname), ''), u.username) AS author_name,
+            u.avatar_asset_id AS author_avatar_asset_id,
+            c.content,
+            c.created_at
+        FROM post_comment c
+        INNER JOIN post p
+            ON p.id = c.post_id
+           AND p.status = 'PUBLISHED'
+        INNER JOIN user_account u
+            ON u.id = c.author_id
+           AND u.status = 'ACTIVE'
+        WHERE c.id = #{commentId}
+        LIMIT 1
+    </select>
+
+    <select id="selectPublicCommentsBySlug"
+            resultType="com.snippet.post.entity.PostComment">
+        SELECT
+            c.id,
+            c.post_id,
+            c.author_id,
+            COALESCE(NULLIF(TRIM(u.nickname), ''), u.username) AS author_name,
+            u.avatar_asset_id AS author_avatar_asset_id,
+            c.content,
+            c.created_at
+        FROM post_comment c
+        INNER JOIN post p
+            ON p.id = c.post_id
+           AND p.status = 'PUBLISHED'
+        INNER JOIN user_account u
+            ON u.id = c.author_id
+           AND u.status = 'ACTIVE'
+        WHERE p.slug = #{slug}
+        ORDER BY c.created_at DESC, c.id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <delete id="deleteComment">
+        DELETE FROM post_comment
+        WHERE post_id = #{postId}
+          AND id = #{commentId}
+          AND author_id = #{authorId}
+    </delete>
+
+    <select id="selectDraftByPostId" resultType="com.snippet.post.entity.PostDraft">
+        SELECT
+            id,
+            post_id,
+            content_json,
+            schema_version,
+            version,
+            updated_by,
+            created_at,
+            updated_at
+        FROM post_draft
+        WHERE post_id = #{postId}
+        LIMIT 1
+    </select>
+
+    <update id="updateDraftContent">
+        UPDATE post_draft
+        SET content_json = #{contentJson},
+            schema_version = #{schemaVersion},
+            version = version + 1,
+            updated_by = #{updatedBy}
+        WHERE post_id = #{postId}
+          AND version = #{expectedVersion}
+    </update>
+
+    <update id="touchPostUpdatedAt">
+        UPDATE post
+        SET updated_at = CURRENT_TIMESTAMP(6)
+        WHERE id = #{postId}
+          AND owner_id = #{ownerId}
+    </update>
+
+    <update id="updatePostBasicInfo">
+        UPDATE post
+        SET title = #{title},
+            description = #{description},
+            updated_at = CURRENT_TIMESTAMP(6)
+        WHERE id = #{postId}
+          AND owner_id = #{ownerId}
+    </update>
+
+    <update id="clearPublishedRevisionId">
+        UPDATE post
+        SET published_revision_id = NULL
+        WHERE id = #{postId}
+          AND owner_id = #{ownerId}
+    </update>
+
+    <delete id="deletePostImages">
+        DELETE FROM post_image
+        WHERE post_id = #{postId}
+    </delete>
+
+    <delete id="deletePostLikes">
+        DELETE FROM post_like
+        WHERE post_id = #{postId}
+    </delete>
+
+    <delete id="deletePostFavorites">
+        DELETE FROM post_favorite
+        WHERE post_id = #{postId}
+    </delete>
+
+    <delete id="deletePostShares">
+        DELETE FROM post_share
+        WHERE post_id = #{postId}
+    </delete>
+
+    <delete id="deletePostComments">
+        DELETE FROM post_comment
+        WHERE post_id = #{postId}
+    </delete>
+
+    <delete id="deletePostRevisions">
+        DELETE FROM post_revision
+        WHERE post_id = #{postId}
+    </delete>
+
+    <delete id="deletePostDraft">
+        DELETE FROM post_draft
+        WHERE post_id = #{postId}
+    </delete>
+
+    <delete id="deletePost">
+        DELETE FROM post
+        WHERE id = #{postId}
+          AND owner_id = #{ownerId}
+    </delete>
+    <select id="selectLatestRevisionNo" resultType="java.lang.Integer">
+        SELECT revision_no
+        FROM post_revision
+        WHERE post_id = #{postId}
+        ORDER BY revision_no DESC
+        LIMIT 1
+        FOR UPDATE
+    </select>
+
+    <insert id="insertPostRevision"
+            useGeneratedKeys="true"
+            keyProperty="id"
+            keyColumn="id">
+        INSERT INTO post_revision
+            (post_id, revision_no, content_json, schema_version, created_by)
+        VALUES
+            (#{postId}, #{revisionNo}, #{contentJson}, #{schemaVersion}, #{createdBy})
+    </insert>
+
+    <update id="publishPost">
+        UPDATE post
+        SET status = 'PUBLISHED',
+            published_revision_id = #{revisionId},
+            published_at = CURRENT_TIMESTAMP(6),
+            updated_at = CURRENT_TIMESTAMP(6)
+        WHERE id = #{postId}
+          AND owner_id = #{ownerId}
+    </update>
+</mapper>

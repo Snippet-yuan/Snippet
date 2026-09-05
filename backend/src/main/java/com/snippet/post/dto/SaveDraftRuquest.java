@@ -26,6 +26,7 @@ public class SaveDraftRuquest {
     @Schema(description = "内容结构版本", example = "1")
     private Integer schemaVersion;
 
+    @NotNull
     @Min(0)
     @Schema(description = "客户端最近一次已知的草稿版本，用于避免覆盖较新的内容", example = "0")
     private Integer version;

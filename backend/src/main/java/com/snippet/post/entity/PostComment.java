@@ -11,21 +11,19 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostDraft {
+public class PostComment {
 
     private Long id;
 
     private Long postId;
 
-    private String contentJson;
+    private Long authorId;
 
-    private Integer schemaVersion;
+    private String authorName;
 
-    private Integer version;
+    private Long authorAvatarAssetId;
 
-    private Long updatedBy;
+    private String content;
 
     private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
 }

@@ -27,3 +27,5 @@ services:
 volumes:
   snippet_mysql_data:
   snippet_redis_data:
+
+

@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @Schema(description = "资源上传结果")
-public class AssetUploadResponse {
+public class   AssetUploadResponse {
 
     @Schema(description = "资源id", example = "10")
     private Long id;
