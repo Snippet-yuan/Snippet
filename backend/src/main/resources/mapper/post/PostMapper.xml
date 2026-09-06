@@ -23,6 +23,42 @@
             (#{postId}, #{contentJson}, #{schemaVersion}, #{version}, #{updatedBy})
     </insert>
 
+    <select id="selectPublicPosts" resultType="com.snippet.post.entity.Post">
+        SELECT
+            id,
+            owner_id,
+            title,
+            description,
+            slug,
+            status,
+            published_revision_id,
+            created_at,
+            updated_at,
+            published_at
+        FROM post
+        WHERE status = 'PUBLISHED'
+        ORDER BY published_at DESC, id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectPostsByOwnerId" resultType="com.snippet.post.entity.Post">
+        SELECT
+            id,
+            owner_id,
+            title,
+            description,
+            slug,
+            status,
+            published_revision_id,
+            created_at,
+            updated_at,
+            published_at
+        FROM post
+        WHERE owner_id = #{ownerId}
+        ORDER BY updated_at DESC, id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
     <select id="selectByIdAndOwnerId" resultType="com.snippet.post.entity.Post">
         SELECT
             id,
@@ -122,6 +158,26 @@
         WHERE post_id = #{postId}
           AND user_id = #{userId}
     </delete>
+
+    <select id="selectFavoritePostsByUserId"
+            resultType="com.snippet.post.entity.PostFavorite">
+        SELECT
+            f.id,
+            f.post_id,
+            f.user_id,
+            f.created_at,
+            p.title,
+            p.description,
+            p.slug,
+            p.published_at
+        FROM post_favorite f
+        INNER JOIN post p
+            ON p.id = f.post_id
+           AND p.status = 'PUBLISHED'
+        WHERE f.user_id = #{userId}
+        ORDER BY f.created_at DESC, f.id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
 
     <insert id="insertComment"
             useGeneratedKeys="true"

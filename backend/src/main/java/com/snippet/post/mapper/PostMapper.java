@@ -3,6 +3,7 @@ package com.snippet.post.mapper;
 import com.snippet.post.entity.Post;
 import com.snippet.post.entity.PostComment;
 import com.snippet.post.entity.PostDraft;
+import com.snippet.post.entity.PostFavorite;
 import com.snippet.post.entity.PostRevision;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -15,6 +16,17 @@ public interface PostMapper {
     int insertPost(Post post);
 
     int insertInitialDraft(PostDraft postDraft);
+
+    List<Post> selectPublicPosts(
+            @Param("limit") Integer limit,
+            @Param("offset") Integer offset
+    );
+
+    List<Post> selectPostsByOwnerId(
+            @Param("ownerId") Long ownerId,
+            @Param("limit") Integer limit,
+            @Param("offset") Integer offset
+    );
 
     Post selectByIdAndOwnerId(
             @Param("postId") Long postId,
@@ -55,6 +67,12 @@ public interface PostMapper {
     int deleteFavorite(
             @Param("postId") Long postId,
             @Param("userId") Long userId
+    );
+
+    List<PostFavorite> selectFavoritePostsByUserId(
+            @Param("userId") Long userId,
+            @Param("limit") Integer limit,
+            @Param("offset") Integer offset
     );
 
     int insertComment(PostComment comment);

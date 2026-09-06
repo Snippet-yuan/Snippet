@@ -7,7 +7,9 @@ import com.snippet.post.dto.CreatePostRequest;
 import com.snippet.post.dto.PostCommentResponse;
 import com.snippet.post.dto.PostDetailResponse;
 import com.snippet.post.dto.PostFavoriteStatusResponse;
+import com.snippet.post.dto.PostFavoriteItemResponse;
 import com.snippet.post.dto.PostLikeStatusResponse;
+import com.snippet.post.dto.PostSummaryResponse;
 import com.snippet.post.dto.PublishRequest;
 import com.snippet.post.dto.SaveDraftRuquest;
 import com.snippet.post.dto.UpdatePostRequest;
@@ -237,6 +239,26 @@ public class PostController {
         );
     }
 
+    @GetMapping("/me/favorites")
+    @Operation(
+            operationId = "getMyFavoritePosts",
+            summary = "查看我的收藏",
+            description = "分页查看当前用户收藏且仍然公开的文章，用户身份从 JWT 获取"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "查询成功"),
+            @ApiResponse(responseCode = "400", description = "分页参数不合法"),
+            @ApiResponse(responseCode = "401", description = "未登录或登录已过期")
+    })
+    public CommonResult<List<PostFavoriteItemResponse>> getMyFavoritePosts(
+            @RequestParam(defaultValue = "20") Integer limit,
+            @RequestParam(defaultValue = "0") Integer offset,
+            @AuthenticationPrincipal Jwt jwt) {
+        return CommonResult.success(
+                postService.getFavoritePosts(currentUserId(jwt), limit, offset)
+        );
+    }
+
     @PostMapping("/posts/{postId}/comments")
     @Operation(
             operationId = "createPostComment",
@@ -336,6 +358,44 @@ public class PostController {
             @AuthenticationPrincipal Jwt jwt) {
         return CommonResult.success(
                 postService.getPostDetail(currentUserId(jwt), postId)
+        );
+    }
+
+    @GetMapping("/users/me/posts")
+    @Operation(
+            operationId = "getMyPosts",
+            summary = "查看我的文章",
+            description = "分页查看当前用户创建的文章，包含草稿和已发布文章，用户身份从 JWT 获取"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "查询成功"),
+            @ApiResponse(responseCode = "400", description = "分页参数不合法"),
+            @ApiResponse(responseCode = "401", description = "未登录或登录已过期")
+    })
+    public CommonResult<List<PostSummaryResponse>> getMyPosts(
+            @RequestParam(defaultValue = "20") Integer limit,
+            @RequestParam(defaultValue = "0") Integer offset,
+            @AuthenticationPrincipal Jwt jwt) {
+        return CommonResult.success(
+                postService.getMyPosts(currentUserId(jwt), limit, offset)
+        );
+    }
+
+    @GetMapping("/public/posts")
+    @Operation(
+            operationId = "getPublicPosts",
+            summary = "查看公开文章列表",
+            description = "无需登录，分页查看已发布文章摘要"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "查询成功"),
+            @ApiResponse(responseCode = "400", description = "分页参数不合法")
+    })
+    public CommonResult<List<PostSummaryResponse>> getPublicPosts(
+            @RequestParam(defaultValue = "20") Integer limit,
+            @RequestParam(defaultValue = "0") Integer offset) {
+        return CommonResult.success(
+                postService.getPublicPosts(limit, offset)
         );
     }
 

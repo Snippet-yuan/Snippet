@@ -170,6 +170,23 @@ GET /api/v1/public/posts/{slug}
 
 该接口无需 JWT。服务端只查询 `post.status=PUBLISHED` 的帖子，并根据 `published_revision_id` 读取正式发布版本，不读取 `post_draft`。帖子未发布、公开标识不存在或正式版本缺失时不会返回草稿内容；前两种情况返回 404，正式版本数据异常返回 500。
 
+公开查看帖子列表：
+
+~~~text
+GET /api/v1/public/posts?limit=20&offset=0
+~~~
+
+该接口无需 JWT，只返回 `PUBLISHED` 帖子的摘要，按发布时间倒序排列。默认返回 20 条，`limit` 最大 100，`offset` 最大 10000；正文需要通过公开详情接口单独读取。
+
+查看当前用户创建的帖子列表：
+
+~~~text
+GET /api/v1/users/me/posts?limit=20&offset=0
+Authorization: Bearer <access-token>
+~~~
+
+服务端从 JWT 的 `sub` 获取 `owner_id`，不接受前端传入用户 ID。列表包含当前用户的草稿和已发布帖子，按更新时间倒序排列；响应只返回摘要，不直接返回草稿正文。
+
 ## 点赞帖子
 
 点赞、取消点赞和查询当前用户的点赞状态：
@@ -195,6 +212,15 @@ Authorization: Bearer <access-token>
 ~~~
 
 收藏关系写入 `post_favorite` 表，服务端从 JWT 的 `sub` 获取用户 ID，不接受前端传入 `userId`。只有 `PUBLISHED` 帖子可以被收藏；重复收藏和重复取消收藏保持幂等，响应中的 `favorited` 表示操作后的状态。数据库通过 `(post_id, user_id)` 唯一约束防止同一用户重复收藏。
+
+查看当前用户收藏列表：
+
+~~~text
+GET /api/v1/me/favorites?limit=20&offset=0
+Authorization: Bearer <access-token>
+~~~
+
+收藏列表服务端从 JWT 的 `sub` 获取用户 ID，不接受前端传入 `userId`。默认返回 20 条，`limit` 最大 100，`offset` 最大 10000。查询只返回仍处于 `PUBLISHED` 状态的帖子，并按收藏时间倒序排列；列表响应只包含帖子摘要和收藏/发布时间，不返回正文草稿或其他用户私密字段。
 
 ## 帖子评论
 
@@ -283,7 +309,7 @@ Content-Type: application/json
 
 1. auth：注册、登录、密码修改；
 2. user：当前用户资料和头像；
-3. post：创建帖子、保存草稿、修改、删除、发布、公开查看、点赞、收藏；
+3. post：创建帖子、保存草稿、修改、删除、发布、公开查看、点赞、收藏、评论和收藏列表；
 4. post_revision：历史版本和恢复；
 5. Redis：会话、登录限流、公开帖子缓存。
 

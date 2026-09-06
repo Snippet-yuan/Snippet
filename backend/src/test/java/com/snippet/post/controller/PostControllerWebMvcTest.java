@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.snippet.auth.mapper.UserAccountMapper;
 import com.snippet.post.dto.PostDetailResponse;
+import com.snippet.post.dto.PostFavoriteItemResponse;
 import com.snippet.post.dto.PostFavoriteStatusResponse;
 import com.snippet.post.dto.PostLikeStatusResponse;
+import com.snippet.post.dto.PostSummaryResponse;
 import com.snippet.post.service.PostService;
 import com.snippet.security.SecurityConfig;
 import com.snippet.security.handler.RestAccessDeniedHandler;
@@ -20,6 +22,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -373,6 +377,103 @@ class PostControllerWebMvcTest {
                 .andExpect(status().isUnauthorized());
 
         verify(postService, org.mockito.Mockito.never()).favoritePost(42L, 100L);
+    }
+
+    @Test
+    void authenticatedFavoriteListUsesJwtSubjectAndPagination() throws Exception {
+        when(postService.getFavoritePosts(42L, 10, 20)).thenReturn(
+                List.of(new PostFavoriteItemResponse(
+                        100L,
+                        "第一篇帖子",
+                        "帖子简介",
+                        "post-first",
+                        null,
+                        null
+                ))
+        );
+
+        mockMvc.perform(get("/api/v1/me/favorites")
+                        .param("limit", "10")
+                        .param("offset", "20")
+                        .with(jwt().jwt(token -> token.subject("42"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data[0].postId").value(100))
+                .andExpect(jsonPath("$.data[0].slug").value("post-first"));
+
+        verify(postService).getFavoritePosts(42L, 10, 20);
+    }
+
+    @Test
+    void favoriteListRequiresAuthentication() throws Exception {
+        mockMvc.perform(get("/api/v1/me/favorites"))
+                .andExpect(status().isUnauthorized());
+
+        verify(postService, org.mockito.Mockito.never())
+                .getFavoritePosts(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void publicPostListDoesNotRequireAuthentication() throws Exception {
+        when(postService.getPublicPosts(10, 20)).thenReturn(
+                List.of(new PostSummaryResponse(
+                        100L,
+                        "公开帖子",
+                        "公开描述",
+                        "post-public",
+                        "PUBLISHED",
+                        null,
+                        null,
+                        null
+                ))
+        );
+
+        mockMvc.perform(get("/api/v1/public/posts")
+                        .param("limit", "10")
+                        .param("offset", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data[0].id").value(100))
+                .andExpect(jsonPath("$.data[0].status").value("PUBLISHED"));
+
+        verify(postService).getPublicPosts(10, 20);
+    }
+
+    @Test
+    void myPostListUsesJwtSubjectAndPagination() throws Exception {
+        when(postService.getMyPosts(42L, 10, 20)).thenReturn(
+                List.of(new PostSummaryResponse(
+                        101L,
+                        "我的草稿",
+                        null,
+                        "post-draft",
+                        "DRAFT",
+                        null,
+                        null,
+                        null
+                ))
+        );
+
+        mockMvc.perform(get("/api/v1/users/me/posts")
+                        .param("limit", "10")
+                        .param("offset", "20")
+                        .with(jwt().jwt(token -> token.subject("42"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data[0].id").value(101))
+                .andExpect(jsonPath("$.data[0].status").value("DRAFT"));
+
+        verify(postService).getMyPosts(42L, 10, 20);
+    }
+
+    @Test
+    void myPostListRequiresAuthentication() throws Exception {
+        mockMvc.perform(get("/api/v1/users/me/posts"))
+                .andExpect(status().isUnauthorized());
+
+        verify(postService, org.mockito.Mockito.never())
+                .getMyPosts(any(), any(), any());
     }
 
     @TestConfiguration

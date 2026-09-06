@@ -8,14 +8,17 @@ import com.snippet.post.dto.CreatePostRequest;
 import com.snippet.post.dto.CreateCommentRequest;
 import com.snippet.post.dto.PostDetailResponse;
 import com.snippet.post.dto.PostCommentResponse;
+import com.snippet.post.dto.PostFavoriteItemResponse;
 import com.snippet.post.dto.PostFavoriteStatusResponse;
 import com.snippet.post.dto.PostLikeStatusResponse;
+import com.snippet.post.dto.PostSummaryResponse;
 import com.snippet.post.dto.PublishRequest;
 import com.snippet.post.dto.SaveDraftRuquest;
 import com.snippet.post.dto.UpdatePostRequest;
 import com.snippet.post.entity.Post;
 import com.snippet.post.entity.PostComment;
 import com.snippet.post.entity.PostDraft;
+import com.snippet.post.entity.PostFavorite;
 import com.snippet.post.entity.PostRevision;
 import com.snippet.post.validator.PostContentValidator;
 import com.snippet.post.mapper.PostMapper;
@@ -41,6 +44,12 @@ public class PostServiceImpl implements PostService {
     private static final int DEFAULT_COMMENT_PAGE_SIZE = 20;
     private static final int MAX_COMMENT_PAGE_SIZE = 100;
     private static final int MAX_COMMENT_OFFSET = 10000;
+    private static final int DEFAULT_FAVORITE_PAGE_SIZE = 20;
+    private static final int MAX_FAVORITE_PAGE_SIZE = 100;
+    private static final int MAX_FAVORITE_OFFSET = 10000;
+    private static final int DEFAULT_POST_PAGE_SIZE = 20;
+    private static final int MAX_POST_PAGE_SIZE = 100;
+    private static final int MAX_POST_OFFSET = 10000;
     private static final int INITIAL_SCHEMA_VERSION = 1;
     private static final int INITIAL_DRAFT_VERSION = 0;
     private static final int SLUG_MAX_LENGTH = 120;
@@ -112,6 +121,31 @@ public class PostServiceImpl implements PostService {
         }
 
         return toResponse(savedPost, savedDraft);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PostSummaryResponse> getMyPosts(
+            Long ownerId,
+            Integer limit,
+            Integer offset) {
+        validateOwnerId(ownerId);
+        int normalizedLimit = normalizePostListLimit(limit);
+        int normalizedOffset = normalizePostListOffset(offset);
+
+        try {
+            List<Post> posts = postMapper.selectPostsByOwnerId(
+                    ownerId,
+                    normalizedLimit,
+                    normalizedOffset
+            );
+            return toSummaryResponses(posts);
+        } catch (DataAccessException exception) {
+            throw new BusinessException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "我的帖子列表读取失败"
+            );
+        }
     }
 
     @Override
@@ -414,6 +448,28 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<PostSummaryResponse> getPublicPosts(
+            Integer limit,
+            Integer offset) {
+        int normalizedLimit = normalizePostListLimit(limit);
+        int normalizedOffset = normalizePostListOffset(offset);
+
+        try {
+            List<Post> posts = postMapper.selectPublicPosts(
+                    normalizedLimit,
+                    normalizedOffset
+            );
+            return toSummaryResponses(posts);
+        } catch (DataAccessException exception) {
+            throw new BusinessException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "公开帖子列表读取失败"
+            );
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public PostDetailResponse getPublicPost(String slug) {
         String normalizedSlug = normalizeSlug(slug);
 
@@ -597,6 +653,36 @@ public class PostServiceImpl implements PostService {
             throw new BusinessException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "收藏状态读取失败"
+            );
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PostFavoriteItemResponse> getFavoritePosts(
+            Long userId,
+            Integer limit,
+            Integer offset) {
+        validateOwnerId(userId);
+        int normalizedLimit = normalizeFavoriteLimit(limit);
+        int normalizedOffset = normalizeFavoriteOffset(offset);
+
+        try {
+            List<PostFavorite> favorites = postMapper.selectFavoritePostsByUserId(
+                    userId,
+                    normalizedLimit,
+                    normalizedOffset
+            );
+            if (favorites == null || favorites.isEmpty()) {
+                return List.of();
+            }
+            return favorites.stream()
+                    .map(this::toFavoriteItemResponse)
+                    .toList();
+        } catch (DataAccessException exception) {
+            throw new BusinessException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "收藏列表读取失败"
             );
         }
     }
@@ -905,6 +991,83 @@ public class PostServiceImpl implements PostService {
             );
         }
         return normalizedOffset;
+    }
+
+    private int normalizeFavoriteLimit(Integer limit) {
+        int normalizedLimit = limit == null ? DEFAULT_FAVORITE_PAGE_SIZE : limit;
+        if (normalizedLimit <= 0 || normalizedLimit > MAX_FAVORITE_PAGE_SIZE) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "收藏列表分页大小必须在1到100之间"
+            );
+        }
+        return normalizedLimit;
+    }
+
+    private int normalizeFavoriteOffset(Integer offset) {
+        int normalizedOffset = offset == null ? 0 : offset;
+        if (normalizedOffset < 0 || normalizedOffset > MAX_FAVORITE_OFFSET) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "收藏列表分页偏移量必须在0到10000之间"
+            );
+        }
+        return normalizedOffset;
+    }
+
+    private int normalizePostListLimit(Integer limit) {
+        int normalizedLimit = limit == null ? DEFAULT_POST_PAGE_SIZE : limit;
+        if (normalizedLimit <= 0 || normalizedLimit > MAX_POST_PAGE_SIZE) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "帖子列表分页大小必须在1到100之间"
+            );
+        }
+        return normalizedLimit;
+    }
+
+    private int normalizePostListOffset(Integer offset) {
+        int normalizedOffset = offset == null ? 0 : offset;
+        if (normalizedOffset < 0 || normalizedOffset > MAX_POST_OFFSET) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "帖子列表分页偏移量必须在0到10000之间"
+            );
+        }
+        return normalizedOffset;
+    }
+
+    private List<PostSummaryResponse> toSummaryResponses(List<Post> posts) {
+        if (posts == null || posts.isEmpty()) {
+            return List.of();
+        }
+        return posts.stream()
+                .map(this::toSummaryResponse)
+                .toList();
+    }
+
+    private PostSummaryResponse toSummaryResponse(Post post) {
+        return new PostSummaryResponse(
+                post.getId(),
+                post.getTitle(),
+                post.getDescription(),
+                post.getSlug(),
+                post.getStatus(),
+                post.getCreatedAt(),
+                post.getUpdatedAt(),
+                post.getPublishedAt()
+        );
+    }
+
+    private PostFavoriteItemResponse toFavoriteItemResponse(PostFavorite favorite) {
+        return new PostFavoriteItemResponse(
+                favorite.getPostId(),
+                favorite.getTitle(),
+                favorite.getDescription(),
+                favorite.getSlug(),
+                favorite.getCreatedAt(),
+                favorite.getPublishedAt()
+        );
     }
 
     private PostCommentResponse toCommentResponse(PostComment comment) {
