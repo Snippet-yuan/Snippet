@@ -259,6 +259,71 @@ Authorization: Bearer <access-token>
 
 删除 SQL 会同时匹配 `post_id`、`comment_id` 和 JWT 中的 `author_id`。因此用户只能删除自己的评论；评论不存在或不属于当前用户时统一返回 404，避免泄露评论归属信息。帖子删除时，服务端会在同一事务中清理该帖子的评论关联。
 
+## 用户关系和好友申请
+
+好友申请继续使用 V2 的 friend 关系表，单向关注使用 V4 新增的 follow 表。friend 记录的 user_id 是关系发起方，friend_id 是目标方；follow 记录的 follower_id 是关注者，following_id 是被关注者。
+
+- PENDING：好友申请等待目标用户处理；
+- FRIEND：申请已接受，接受操作会同时建立两个方向的好友关系；
+- REJECTED：申请已拒绝，原申请人之后可以再次发起申请。
+
+获取当前用户的关注列表：
+
+~~~text
+GET /api/v1/users/me/following?limit=20&offset=0
+Authorization: Bearer <access-token>
+~~~
+
+这个接口只查询 follow 表中 follower_id 等于当前用户 ID 的记录，因此 A 关注 B 不会自动让 B 关注 A。响应只包含 id、username、nickname、avatarAssetId，不会返回邮箱、密码哈希、账号状态等私密字段。limit 默认 20，最大 100；offset 默认 0，最大 10000。
+
+关注、取消关注和查询关注状态：
+
+~~~text
+POST /api/v1/users/{followingId}/follow
+DELETE /api/v1/users/{followingId}/follow
+GET /api/v1/users/{followingId}/follow
+Authorization: Bearer <access-token>
+~~~
+
+关注关系使用 follower_id 和 following_id 的联合唯一索引防止重复关注；重复关注和重复取消关注保持幂等。用户不能关注自己，目标用户必须存在且处于 ACTIVE 状态。
+
+获取发给当前用户的待处理好友申请：
+
+~~~text
+GET /api/v1/users/me/friend-requests?limit=20&offset=0
+Authorization: Bearer <access-token>
+~~~
+
+发起好友申请：
+
+~~~text
+POST /api/v1/users/me/friend-requests
+Authorization: Bearer <access-token>
+Content-Type: application/json
+~~~
+
+请求体只接收目标用户：
+
+~~~json
+{
+  "targetUserId": 43
+}
+~~~
+
+申请人从 JWT 的 sub 获取，不能由前端传入 requesterId、userId 或 ownerId。服务端会拒绝自己申请自己、目标用户不存在、重复申请和已建立好友关系等情况。
+
+接受或拒绝好友申请：
+
+~~~text
+POST /api/v1/users/me/friend-requests/{requestId}/accept
+POST /api/v1/users/me/friend-requests/{requestId}/reject
+Authorization: Bearer <access-token>
+~~~
+
+处理申请时，业务层会用 JWT 中的接收人 ID 与申请记录一起校验，并且 SQL 只允许把 PENDING 状态更新为目标状态。因此用户不能处理发给别人的申请，也不能重复处理已经接受或拒绝的申请。接受申请在事务中把申请方向和反向关系都置为 FRIEND。
+
+现在关注和好友已经分开：关注只写入 follow 表，好友申请只写入 friend 表。V4 只新增表和索引，不修改 V2。
+
 ## 当前用户资料
 
 获取当前登录用户资料：

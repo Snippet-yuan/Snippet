@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.snippet.social.mapper.FollowMapper">
+    <select id="selectActiveUserById"
+            resultType="com.snippet.social.entity.RelationUser">
+        SELECT
+            id,
+            username,
+            nickname,
+            avatar_asset_id
+        FROM user_account
+        WHERE id = #{userId}
+          AND status = 'ACTIVE'
+        LIMIT 1
+    </select>
+
+    <select id="selectFollowingUsers"
+            resultType="com.snippet.social.entity.RelationUser">
+        SELECT
+            u.id,
+            u.username,
+            u.nickname,
+            u.avatar_asset_id
+        FROM follow f
+        INNER JOIN user_account u
+            ON u.id = f.following_id
+           AND u.status = 'ACTIVE'
+        WHERE f.follower_id = #{followerId}
+        ORDER BY f.created_at DESC, f.id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="existsFollow" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+            FROM follow
+            WHERE follower_id = #{followerId}
+              AND following_id = #{followingId}
+        )
+    </select>
+
+    <insert id="insertFollow">
+        INSERT INTO follow (follower_id, following_id)
+        VALUES (#{followerId}, #{followingId})
+    </insert>
+
+    <delete id="deleteFollow">
+        DELETE FROM follow
+        WHERE follower_id = #{followerId}
+          AND following_id = #{followingId}
+    </delete>
+</mapper>
