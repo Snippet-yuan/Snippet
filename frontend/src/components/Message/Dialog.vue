@@ -54,7 +54,7 @@
           v-if="message.isMine"
           class="self-avatar"
           :src="userStore.user.avatar"
-          :alt="我的头像"
+          alt="我的头像"
         />
       </div>
     </div>
@@ -105,7 +105,6 @@ import { formatTime } from "@/utils/timeFormat";
 import { useUserStore } from "@/stores/user";
 
 const userStore = useUserStore();
-console.log(userStore.user.avatar);
 
 const props = defineProps({
   conversationId: {

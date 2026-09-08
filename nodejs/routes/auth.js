@@ -1,8 +1,18 @@
+/**
+ * 认证路由
+ * POST /api/v1/auth/login     登录
+ * POST /api/v1/auth/register  注册
+ *
+ * 薄控制器：校验与业务逻辑在 services/userService 中完成。
+ */
+
 const express = require("express");
-const router = express.Router();
 const userService = require("../services/userService");
 const { success, fail } = require("../utils/response");
 
+const router = express.Router();
+
+// 登录
 router.post("/login", async (req, res) => {
   try {
     const data = await userService.login(req.body);
@@ -13,6 +23,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// 注册
 router.post("/register", async (req, res) => {
   try {
     const data = await userService.register(req.body);

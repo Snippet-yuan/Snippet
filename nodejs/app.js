@@ -1,8 +1,14 @@
+/**
+ * 应用入口
+ * 负责：中间件装配、静态资源托管、数据库同步、路由挂载与启动。
+ */
+
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const { sequelize } = require("./models");
 
+// 路由
 const authRouter = require("./routes/auth");
 const postsRouter = require("./routes/posts");
 const usersRouter = require("./routes/users");
@@ -12,11 +18,17 @@ const followsRouter = require("./routes/follows");
 
 const app = express();
 
+// ---------------------------------------------------------------------------
+// 中间件
+// ---------------------------------------------------------------------------
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
+// 静态资源：上传的头像 / 背景图
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// 先同步表，再启动服务器
+// ---------------------------------------------------------------------------
+// 启动
+// ---------------------------------------------------------------------------
 async function start() {
   try {
     await sequelize.authenticate();
@@ -26,6 +38,7 @@ async function start() {
     await sequelize.sync({ alter: true });
     console.log("表同步完成：", Object.keys(sequelize.models).join(", "));
 
+    // 路由挂载（注意顺序：/users 相关的 follows 需在 users 之前或之后均可，此处保持原顺序）
     app.use("/api/v1/auth", authRouter);
     app.use("/api/v1", usersRouter);
     app.use("/api/v1/users", followsRouter);

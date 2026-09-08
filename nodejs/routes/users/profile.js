@@ -1,13 +1,25 @@
+/**
+ * 用户主页资料（对外展示）
+ * GET /:userId            个人资料 + 关系 / 统计
+ * GET /:userId/posts      某人的帖子列表
+ * GET /:userId/favorites  某人的收藏列表
+ *
+ * 挂载于 /api/v1/users
+ */
+
 const express = require("express");
-const jwt = require("jsonwebtoken");
 const { Op } = require("sequelize");
 const { User, Post, PostLike, PostFavorite, Friendship, FriendRequest, Follow } = require("../../models");
-const { JWT_SECRET } = require("../../utils/jwt");
+const { getUserId } = require("../../middleware/auth");
 const { success, fail } = require("../../utils/response");
+const { sanitizeProfile, sanitizePost } = require("../../utils/sanitize");
+const { parsePagination } = require("../../utils/pagination");
 
 const router = express.Router();
 
-const POST_ATTRIBUTES = ["id", "ownerId", "title", "description", "images", "likeCount", "favoriteCount", "commentCount", "shareCount", "createdAt"];
+// ---------------------------------------------------------------------------
+// 常量
+// ---------------------------------------------------------------------------
 
 const OWNER_INCLUDE = {
   model: User,
@@ -15,140 +27,80 @@ const OWNER_INCLUDE = {
   attributes: ["id", "nickname", "avatar"],
 };
 
-function getUserId(req) {
-  const authorization = req.get("Authorization") || "";
-  const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
-  if (!token) {
-    const error = new Error("请先登录");
-    error.statusCode = 401;
-    throw error;
-  }
-
-  try {
-    return Number(jwt.verify(token, JWT_SECRET).id);
-  } catch {
-    const error = new Error("登录已过期，请重新登录");
-    error.statusCode = 401;
-    throw error;
-  }
-}
-
-function parsePagination(query) {
-  const page = Number(query.page ?? 1);
-  const limit = Number(query.limit ?? 20);
-  if (!Number.isInteger(page) || page < 1 || !Number.isInteger(limit) || limit < 1) {
-    return null;
-  }
-  return { page, limit: Math.min(limit, 50) };
-}
-
-function sanitizeProfile(user) {
-  return {
-    id: String(user.id),
-    nickname: user.nickname,
-    bio: user.bio || "",
-    avatar: user.avatar || "",
-    background: user.background || "",
-    createdAt: user.createdAt ? user.createdAt.toISOString() : "",
-  };
-}
-
-function sanitizePost(post, state = {}) {
-  return {
-    id: String(post.id),
-    ownerId: String(post.ownerId),
-    ownerNickname: post.owner?.nickname || "",
-    ownerAvatar: post.owner?.avatar || "",
-    title: post.title,
-    description: post.description || "",
-    images: Array.isArray(post.images) ? post.images : [],
-    counters: {
-      likeCount: post.likeCount || 0,
-      favoriteCount: post.favoriteCount || 0,
-      commentCount: post.commentCount || 0,
-      shareCount: post.shareCount || 0,
-    },
-    liked: Boolean(state.liked),
-    favorited: Boolean(state.favorited),
-    createdAt: post.createdAt,
-  };
-}
-
-// GET /api/v1/users/:userId
+// ---------------------------------------------------------------------------
+// GET /:userId — 个人资料与关系/统计
+// ---------------------------------------------------------------------------
 router.get("/:userId", async (req, res) => {
   try {
-    const userId = getUserId(req);
+    const currentUserId = getUserId(req);
     const targetId = Number(req.params.userId);
-    if (!Number.isInteger(targetId) || targetId <= 0) {
-      return res.status(400).json(fail("userId 无效", 400));
-    }
+    if (!Number.isInteger(targetId) || targetId <= 0) return res.status(400).json(fail("userId 无效", 400));
 
     const user = await User.findByPk(targetId, {
       attributes: ["id", "nickname", "bio", "avatar", "background", "createdAt"],
     });
     if (!user) return res.status(404).json(fail("用户不存在", 404));
 
-    const [postCount, favoriteCount, friendship, friendRequest, followingRecord, followerRecord, followingCount, followerCount] = await Promise.all([
-      Post.count({ where: { ownerId: targetId } }),
-      PostFavorite.count({ where: { userId: targetId } }),
-      Friendship.findOne({
-        where: {
-          [Op.or]: [
-            { userId, friendUserId: targetId },
-            { userId: targetId, friendUserId: userId },
-          ],
-        },
-        attributes: ["id"],
-      }),
-      FriendRequest.findOne({
-        where: {
-          status: "PENDING",
-          [Op.or]: [
-            { senderId: userId, receiverId: targetId },
-            { senderId: targetId, receiverId: userId },
-          ],
-        },
-        attributes: ["id", "senderId", "receiverId", "status"],
-        order: [["id", "DESC"]],
-      }),
-      Follow.findOne({ where: { followerId: userId, followedId: targetId }, attributes: ["id"] }),
-      Follow.findOne({ where: { followerId: targetId, followedId: userId }, attributes: ["id"] }),
-      Follow.count({ where: { followerId: targetId } }),
-      Follow.count({ where: { followedId: targetId } }),
-    ]);
+    const [postCount, favoriteCount, friendship, friendRequest, followingRecord, followerRecord, followingCount, followerCount] =
+      await Promise.all([
+        Post.count({ where: { ownerId: targetId } }),
+        PostFavorite.count({ where: { userId: targetId } }),
+        Friendship.findOne({
+          where: { [Op.or]: [{ userId: currentUserId, friendUserId: targetId }, { userId: targetId, friendUserId: currentUserId }] },
+          attributes: ["id"],
+        }),
+        FriendRequest.findOne({
+          where: {
+            status: "PENDING",
+            [Op.or]: [
+              { senderId: currentUserId, receiverId: targetId },
+              { senderId: targetId, receiverId: currentUserId },
+            ],
+          },
+          attributes: ["id", "senderId", "receiverId", "status"],
+          order: [["id", "DESC"]],
+        }),
+        Follow.findOne({ where: { followerId: currentUserId, followedId: targetId }, attributes: ["id"] }),
+        Follow.findOne({ where: { followerId: targetId, followedId: currentUserId }, attributes: ["id"] }),
+        Follow.count({ where: { followerId: targetId } }),
+        Follow.count({ where: { followedId: targetId } }),
+      ]);
 
+    // 好友申请状态：NONE / PENDING_SENT / PENDING_RECEIVED
     let friendRequestStatus = "NONE";
     if (friendRequest) {
-      friendRequestStatus = Number(friendRequest.senderId) === userId ? "PENDING_SENT" : "PENDING_RECEIVED";
+      friendRequestStatus = Number(friendRequest.senderId) === currentUserId ? "PENDING_SENT" : "PENDING_RECEIVED";
     }
 
-    res.json(success({
-      ...sanitizeProfile(user),
-      isSelf: userId === targetId,
-      isFriend: Boolean(friendship),
-      friendRequestStatus,
-      friendRequestId: friendRequest ? String(friendRequest.id) : null,
-      isFollowing: Boolean(followingRecord),
-      followedBy: Boolean(followerRecord),
-      postCount,
-      favoriteCount,
-      followingCount,
-      followerCount,
-    }));
-  } catch (error) {
-    const status = error.statusCode || 500;
-    res.status(status).json(fail(error.message, status));
+    res.json(
+      success({
+        ...sanitizeProfile(user),
+        isSelf: currentUserId === targetId,
+        isFriend: Boolean(friendship),
+        friendRequestStatus,
+        friendRequestId: friendRequest ? String(friendRequest.id) : null,
+        isFollowing: Boolean(followingRecord),
+        followedBy: Boolean(followerRecord),
+        postCount,
+        favoriteCount,
+        followingCount,
+        followerCount,
+      })
+    );
+  } catch (err) {
+    const status = err.statusCode || 500;
+    res.status(status).json(fail(err.message, status));
   }
 });
 
-// GET /api/v1/users/:userId/posts
+// ---------------------------------------------------------------------------
+// GET /:userId/posts
+// ---------------------------------------------------------------------------
 router.get("/:userId/posts", async (req, res) => {
   try {
-    const userId = getUserId(req);
+    const currentUserId = getUserId(req);
     const targetId = Number(req.params.userId);
-    if (!Number.isInteger(targetId) || targetId <= 0) {
-      return res.status(400).json(fail("userId 无效", 400));
-    }
+    if (!Number.isInteger(targetId) || targetId <= 0) return res.status(400).json(fail("userId 无效", 400));
 
     const user = await User.findByPk(targetId, { attributes: ["id"] });
     if (!user) return res.status(404).json(fail("用户不存在", 404));
@@ -164,30 +116,36 @@ router.get("/:userId/posts", async (req, res) => {
       offset: (pagination.page - 1) * pagination.limit,
     });
 
-    const likedPostIds = rows.length
-      ? (await PostLike.findAll({ where: { postId: rows.map((post) => post.id), userId }, attributes: ["postId"] })).map((item) => String(item.postId))
+    const likedIds = rows.length
+      ? (
+          await PostLike.findAll({
+            where: { postId: rows.map((p) => p.id), userId: currentUserId },
+            attributes: ["postId"],
+          })
+        ).map((item) => String(item.postId))
       : [];
 
-    res.json(success({
-      items: rows.map((post) => sanitizePost(post, { liked: likedPostIds.includes(String(post.id)) })),
-      hasMore: pagination.page * pagination.limit < count,
-      page: pagination.page,
-      total: count,
-    }));
-  } catch (error) {
-    const status = error.statusCode || 500;
-    res.status(status).json(fail(error.message, status));
+    res.json(
+      success({
+        items: rows.map((post) => sanitizePost(post, { liked: likedIds.includes(String(post.id)) })),
+        hasMore: pagination.page * pagination.limit < count,
+        page: pagination.page,
+        total: count,
+      })
+    );
+  } catch (err) {
+    const status = err.statusCode || 500;
+    res.status(status).json(fail(err.message, status));
   }
 });
 
-// GET /api/v1/users/:userId/favorites
+// ---------------------------------------------------------------------------
+// GET /:userId/favorites
+// ---------------------------------------------------------------------------
 router.get("/:userId/favorites", async (req, res) => {
   try {
-    const userId = getUserId(req);
     const targetId = Number(req.params.userId);
-    if (!Number.isInteger(targetId) || targetId <= 0) {
-      return res.status(400).json(fail("userId 无效", 400));
-    }
+    if (!Number.isInteger(targetId) || targetId <= 0) return res.status(400).json(fail("userId 无效", 400));
 
     const user = await User.findByPk(targetId, { attributes: ["id"] });
     if (!user) return res.status(404).json(fail("用户不存在", 404));
@@ -203,20 +161,24 @@ router.get("/:userId/favorites", async (req, res) => {
       offset: (pagination.page - 1) * pagination.limit,
     });
 
-    const items = rows.filter((favorite) => favorite.post).map((favorite) => ({
-      ...sanitizePost(favorite.post, { favorited: true }),
-      favoritedAt: favorite.createdAt ? favorite.createdAt.toISOString() : "",
-    }));
+    const items = rows
+      .filter((fav) => fav.post)
+      .map((fav) => ({
+        ...sanitizePost(fav.post, { favorited: true }),
+        favoritedAt: fav.createdAt ? fav.createdAt.toISOString() : "",
+      }));
 
-    res.json(success({
-      items,
-      hasMore: pagination.page * pagination.limit < count,
-      page: pagination.page,
-      total: count,
-    }));
-  } catch (error) {
-    const status = error.statusCode || 500;
-    res.status(status).json(fail(error.message, status));
+    res.json(
+      success({
+        items,
+        hasMore: pagination.page * pagination.limit < count,
+        page: pagination.page,
+        total: count,
+      })
+    );
+  } catch (err) {
+    const status = err.statusCode || 500;
+    res.status(status).json(fail(err.message, status));
   }
 });
 
